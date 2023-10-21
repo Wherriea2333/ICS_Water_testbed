@@ -133,6 +133,7 @@ class Device(yaml.YAMLObject):
 
 class Pump(Device):
     yaml_tag = u'!pump'
+    yaml_loader = yaml.CLoader
 
     def __init__(self, device_type='pump', state='off', **kwargs):
         state = bool(['off', 'on'].index(state))
@@ -174,6 +175,7 @@ class Pump(Device):
 
 class Valve(Device):
     yaml_tag = u'!valve'
+    yaml_loader = yaml.CLoader
 
     def __init__(self, device_type='valve', state='closed', capacity=0, **kwargs):
 
@@ -222,6 +224,7 @@ class Valve(Device):
 
 class Filter(Device):
     yaml_tag = u'!filter'
+    yaml_loader = yaml.CLoader
 
     def __init__(self, device_type='filter', **kwargs):
         super(Filter, self).__init__(device_type=device_type, **kwargs)
@@ -247,6 +250,7 @@ class Filter(Device):
 class Tank(Device):
     """Infinite max volume tank!"""
     yaml_tag = u'!tank'
+    yaml_loader = yaml.CLoader
 
     def __init__(self, volume=0, device_type='tank', **kwargs):
         self.volume = volume
@@ -295,3 +299,16 @@ class Tank(Device):
     def worker(self):
         """For debugging only. Used to display the tank's volume"""
         pass
+
+
+class Reservoir(Tank):
+    yaml_tag = u'!reservoir'
+    yaml_loader = yaml.CLoader
+
+    def __init__(self, **kwargs):
+        super(Reservoir, self).__init__(device_type='reservoir', **kwargs)
+
+    def worker(self):
+        """Make sure that we don't run dry.
+        """
+        self.volume += 10
