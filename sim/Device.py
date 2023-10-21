@@ -67,26 +67,26 @@ class Device(yaml.YAMLObject):
             device.add_input(self)
             log.info(f"{self}: Added output -> {device}")
 
-    def run(self):
-        """Executed at least once and at regular intervals if `worker_frequency` is not None.
-            Used to call worker method
-        """
-        if self.active:
-            log.debug(f"{self} up at : {datetime.now()}")
-            self.worker()
-
-            if self.worker_frequency:
-                # Calculate the next run time based on simulation speed and device frequency
-                delay = (-time.time() % (self.speed * self.worker_frequency))
-                t = threading.Timer(delay, self.run)
-                t.daemon = True
-                t.start()
+    # def run(self):
+    #     """Executed at least once and at regular intervals if `worker_frequency` is not None.
+    #         Used to call worker method
+    #     """
+    #     if self.active:
+    #         # log.debug(f"{self} up at : {datetime.now()}")
+    #         self.worker()
+    #
+    #         if self.worker_frequency:
+    #             # Calculate the next run time based on simulation speed and device frequency
+    #             delay = (-time.time() % (self.speed * self.worker_frequency))
+    #             t = threading.Timer(delay, self.run)
+    #             t.daemon = True
+    #             t.start()
 
     def activate(self):
         """Set this device as active so the worker gets called"""
         if not self.active:
             self.active = True
-            self.run()
+            # self.run()
         log.info(f"{self}: Active")
 
     def deactivate(self):
@@ -152,7 +152,7 @@ class Pump(Device):
         """Receive the fluid, add it to output devices equally"""
         if self.state:
             self.fluid = fluid
-            volume_per_device = equal_division_to_devices(volume, self.output_devices)
+            volume_per_device = equal_division_to_devices(volume, len(self.output_devices))
             for devices in self.output_devices:
                 # Send fluid to all outputs equally
                 self.output_devices[devices].input(fluid, volume=volume_per_device)
@@ -190,7 +190,10 @@ class Valve(Device):
         self.state = False
 
     def worker(self):
-        pass
+        if self.state:
+            for i in self.output_devices:
+                self.output_devices[i].input(self)
+        # pass
 
     def output(self, to_device, volume=1):
         """If the valve is open, pull `volume` amount from connected devices
@@ -198,7 +201,7 @@ class Valve(Device):
         if self.state:
             available_volume = 0
             desired_volume = min(volume, self.capacity)
-            volume_per_device = equal_division_to_devices(desired_volume, self.input_devices)
+            volume_per_device = equal_division_to_devices(desired_volume, len(self.input_devices))
             for i in self.input_devices:
                 available_volume += self.input_devices[i].output(self, volume=volume_per_device)
             return available_volume
@@ -212,7 +215,7 @@ class Valve(Device):
         """
         if self.state:
             accepted_volume = 0
-            volume_per_device = equal_division_to_devices(volume, self.output_devices)
+            volume_per_device = equal_division_to_devices(volume, len(self.output_devices))
             for o in self.output_devices:
                 # Send the fluid on to all outputs
                 # log.debug("%s sending fluid to %s" % (self, self.outputs[o]))
@@ -230,18 +233,21 @@ class Filter(Device):
         super(Filter, self).__init__(device_type=device_type, **kwargs)
 
     def worker(self):
+        # if self.state:
+        #     for i in self.output_devices:
+        #         self.output_devices[i].input(self)
         pass
 
     def output(self, to_device, volume=1):
         available_volume = 0
-        volume_per_device = equal_division_to_devices(volume, self.input_devices)
+        volume_per_device = equal_division_to_devices(volume, len(self.input_devices))
         for i in self.input_devices:
             available_volume += self.input_devices[i].output(self, volume=volume_per_device)
         return available_volume
 
     def input(self, fluid, volume=1):
         accepted_volume = 0
-        volume_per_device = equal_division_to_devices(volume, self.output_devices)
+        volume_per_device = equal_division_to_devices(volume, len(self.output_devices))
         for o in self.output_devices:
             accepted_volume += self.output_devices[o].input(fluid, volume=volume_per_device)
         return accepted_volume
@@ -279,12 +285,15 @@ class Tank(Device):
         return volume
 
     def __update_fluid(self, new_context):
+        logging.info(f"volume {self.fluid}")
         self.fluid = new_context
 
     def input(self, fluid, volume=1):
         """Receive `volume` amount of `fluid`"""
         self.__update_fluid(fluid)
+        logging.info(f"volume before input to tank {self.volume}")
         accepted_volume = self.__increase_volume(volume)
+        logging.info(f"volume after input to tank {self.volume}")
         return accepted_volume
 
     # Tank output to only one device
@@ -294,7 +303,11 @@ class Tank(Device):
             we decrease our volume. e.g. full tank.
         """
         accepted_volume = to_device.input(self.fluid, self.__check_volume(volume))
+        logging.info(f"volume before output from tank {self.volume}")
         self.__decrease_volume(accepted_volume)
+        # TODO: investigate why we need this return
+        logging.info(f"volume after output from tank {self.volume}")
+        return accepted_volume
 
     def worker(self):
         """For debugging only. Used to display the tank's volume"""

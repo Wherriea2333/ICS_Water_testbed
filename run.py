@@ -12,4 +12,4 @@ if __name__ == '__main__':
     sim = Simulator(debug=args.verbose)
     sim.load_yml(args.config)
 
-    # sim.start()
+    sim.start()

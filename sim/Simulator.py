@@ -1,16 +1,23 @@
-import logging
-import sys
 import signal
+import sys
 
-import yaml
-
-from sim.Device import Reservoir
-from sim.Fluid import Water
+from sim.Device import *
+from sim.Fluid import *
+from sim.Sensor import *
 from sim.utils import parse_yml, build_simulation
+
+from time import sleep
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')
 log.setLevel(logging.WARN)
+
+
+def foo():
+    """Empty function to not accidentally delete import from Device,Fluid,Sensor"""
+    device = Device()
+    fluid = Fluid()
+    sensor = Sensor()
 
 
 class Simulator(object):
@@ -36,18 +43,15 @@ class Simulator(object):
     def load_yml(self, path_to_yaml_config):
         """Read and parse YAML configuration file into simulator devices
         """
-        print("In the LOAD YAML")
         self.path_to_yaml_config = path_to_yaml_config
-        print("before parse")
         self.config = parse_yml(path_to_yaml_config)
-        print("after parse")
         simulation = build_simulation(self.config)
         self.settings = simulation['settings']
         self.devices = simulation['devices']
-        # self.sensors = simulation['sensors']
+        self.sensors = simulation['sensors']
         # self.plcs = simulation['plcs']
 
-        # self.set_speed(self.settings['speed'])
+        self.set_speed(self.settings['speed'])
 
     def start(self):
         """Start the simulation"""
@@ -56,6 +60,13 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.activate()
+        log.info(self.devices)
+        for i in range(10):
+            for device in self.devices.values():
+                device.worker()
+            for sensor in self.sensors.values():
+                sensor.worker()
+                log.info(sensor.read_sensor())
 
         # for plc in self.plcs:
         #     for sensor in self.plcs[plc]['sensors']:
@@ -95,5 +106,5 @@ class Simulator(object):
     def restart(self):
         """Stop and reload the simulation from the original config"""
         self.pause()
-        self.load_yml(self.path_to_yaml_config,)
+        self.load_yml(self.path_to_yaml_config, )
         self.start()

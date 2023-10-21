@@ -25,27 +25,29 @@ devices:
 connections:
   reservoir1:
     outputs:
-     - valve1
-  valve1:
-    outputs:
-     - pump1
+      - pump1
+#     - valve1
+#  valve1:
+#    outputs:
+#     - pump1
   pump1:
     outputs:
-     - filter1
-  filter1:
-    outputs:
-     - valve2
-  valve2:
-    outputs:
      - municipaltank
+#     - valve2
+#  filter1:
+#    outputs:
+#     - valve2
+#  valve2:
+#    outputs:
+#     - municipaltank
 
-#sensors:
-#  - !volume
-#    label: reservoirsensor
-#    connected_to: reservoir1
-#  - !volume
-#    label: municipaltanksensor
-#    connected_to: municipaltank
+sensors:
+  - !volume
+    label: reservoirsensor
+    connected_to: reservoir1
+  - !volume
+    label: municipaltanksensor
+    connected_to: municipaltank
 #  - !state
 #    label: valve1sensor
 #    connected_to: valve1
