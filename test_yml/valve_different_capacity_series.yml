@@ -1,6 +1,6 @@
 settings:
   speed: 1
-# GIVES ONLY 0.4 and 0.5 TO VALVES...
+
 devices:
   - !reservoir
     label: reservoir1
@@ -24,7 +24,7 @@ devices:
   - !valve
     label: valve3
     state: 'open'
-    capacity: 0.6
+    capacity: 0.4
   - !tank
     label: municipaltank
 

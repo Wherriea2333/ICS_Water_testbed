@@ -18,7 +18,6 @@ class Sensor(Device):
         """
         available_volume = 0
         for i in self.inputs:
-            # TODO: distribute volume to outputs
             available_volume = self.inputs[i].output(self, volume=volume)
         return available_volume
 
@@ -30,7 +29,6 @@ class Sensor(Device):
         for o in self.outputs:
             # Send the fluid on to all outputs
             # log.debug("%s sending fluid to %s" % (self, self.outputs[o]))
-            # TODO: distribute volume to inputs
             accepted_volume = self.outputs[o].input(fluid, volume)
         return accepted_volume
 
