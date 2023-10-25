@@ -10,7 +10,6 @@ devices:
   - !valve
     label: valve1
     state: 'open'
-    capacity: 1
   - !pump
     label: pump1
     state: 'on'
@@ -20,11 +19,9 @@ devices:
   - !valve
     label: valve2
     state: 'open'
-    capacity: 0.4
   - !valve
     label: valve3
     state: 'open'
-    capacity: 0.6
   - !tank
     label: municipaltank
 

@@ -1,4 +1,5 @@
 import argparse
+import string
 
 from sim.Simulator import Simulator
 
@@ -9,8 +10,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', help='Set verbosity level',
                         type=int, default=0, choices=[0, 1, 2], action='store')
 
-    parser.add_argument('-m', '--math_parser', help='Type of math expression parser', type=str,
-                        default='proportional', choices=['proportional', 'sympy', 'wolfram'], action='store_const')
+    parser.add_argument('-m', '--math_parser', help='Type of math expression parser',
+                        default='proportional', choices=['proportional', 'sympy', 'wolfram'], action='store')
     args = parser.parse_args()
 
     sim = Simulator(debug=args.verbose, math_parser=args.math_parser)

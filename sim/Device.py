@@ -114,6 +114,30 @@ class Device(yaml.YAMLObject):
         """
         return 0
 
+    def input_fluid(self, fluid, volume):
+        if self.math_parser == 'proportional':
+            for o in self.output_devices:
+                # Send the fluid on to all outputs equally
+                self.output_devices[o].input(fluid, volume / len(self.output_devices))
+        elif self.math_parser == 'sympy':
+            for devices_label, expr in self.to_device_expr:
+                self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
+        elif self.math_parser == 'wolfram':
+            for devices_label, expr in self.output_devices:
+                self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
+
+    def output_fluid(self, volume):
+        if self.math_parser == 'proportional':
+            for o in self.input_devices:
+                # Send the fluid on to all outputs equally
+                self.input_devices[o].output(self, volume)
+        elif self.math_parser == 'sympy':
+            for devices_label, expr in self.input_devices:
+                self.input_devices[devices_label].output(self, volume)
+        elif self.math_parser == 'wolfram':
+            for devices_label, expr in self.input_devices:
+                self.input_devices[devices_label].output(self, volume)
+
     def __repr__(self):
         return f"Device: {self.uid} || {self.device_type} || {self.label}"
 
@@ -138,16 +162,7 @@ class Pump(Device):
         """Receive the fluid, add it to output devices equally"""
         if self.state:
             self.fluid = fluid
-            if self.math_parser == 'proportional':
-                for o in self.output_devices:
-                    # Send the fluid on to all outputs equally
-                    self.output_devices[o].input(fluid, volume / len(self.output_devices))
-            elif self.math_parser == 'sympy':
-                for devices_label, expr in self.to_device_expr:
-                    self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
-            elif self.math_parser == 'wolfram':
-                for devices_label, expr in self.output_devices:
-                    self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
+            self.input_fluid(fluid, volume)
             return volume
         else:
             return 0
@@ -169,10 +184,10 @@ class Valve(Device):
     yaml_tag = u'!valve'
     yaml_loader = yaml.CLoader
 
-    def __init__(self, device_type='valve', state='closed', capacity=0, **kwargs):
+    def __init__(self, device_type='valve', state='closed', **kwargs):
 
         state = bool(['closed', 'open'].index(state))
-        self.capacity = capacity
+        self.current_flow_rate = 0
         super(Valve, self).__init__(device_type=device_type, state=state, **kwargs)
 
     def open(self):
@@ -188,20 +203,9 @@ class Valve(Device):
         """If the valve is open, pull `volume` amount from connected devices
         """
         if self.state:
-            # compute volume to output
-            active_device_number = 0
-            for device in self.output_devices.values():
-                if device.active:
-                    active_device_number += 1
-            log.info(f"output volume from valve {volume}")
-            max_volume_per_device = equal_division_to_devices(self.capacity, active_device_number)
-            desired_volume = min(volume, max_volume_per_device)
-
-            self.previous_output_device = to_device
-            # call the previous device output with the desired volume
-            for i in self.input_devices:
-                self.input_devices[i].output(self, desired_volume)
-            return desired_volume
+            self.current_flow_rate += volume
+            self.output_fluid(volume)
+            return volume
         else:
             # log.debug("%s closed" % self)
             return 0
@@ -211,20 +215,7 @@ class Valve(Device):
             Normally used when pump's push fluid through.
         """
         if self.state:
-            active_device_number = 0
-            for device in self.output_devices.values():
-                if device.active:
-                    active_device_number += 1
-            max_volume_per_device = equal_division_to_devices(self.capacity, active_device_number)
-            desired_volume = min(volume, max_volume_per_device)
-
-            if self.previous_output_device is None:
-                for o in self.output_devices:
-                    # Send the fluid on to all outputs
-                    self.output_devices[o].input(fluid, desired_volume)
-            else:
-                self.previous_output_device.input(fluid, min(volume, self.capacity))
-                self.previous_output_device = None
+            self.input_fluid(fluid, volume)
             return volume
         else:
             return 0
@@ -242,19 +233,12 @@ class Filter(Device):
 
     def output(self, to_device, volume=1):
         volume_per_device = equal_division_to_devices(volume, len(self.input_devices))
-        self.previous_output_device = to_device
-        for i in self.input_devices:
-            self.input_devices[i].output(self, volume=volume_per_device)
+        self.output_fluid(volume)
         return volume_per_device
 
     def input(self, fluid, volume=1):
         log.info(f"volume through filter: {volume}")
-        if self.previous_output_device is None:
-            for o in self.output_devices:
-                self.output_devices[o].input(fluid, volume)
-        else:
-            self.previous_output_device.input(fluid, volume)
-            self.previous_output_device = None
+        self.input_fluid(fluid, volume)
         return volume
 
 
@@ -264,29 +248,29 @@ class Tank(Device):
     yaml_loader = yaml.CLoader
 
     def __init__(self, volume=0, device_type='tank', **kwargs):
-        self.volume = volume
+        self.initial_volume = volume
         super(Tank, self).__init__(device_type=device_type, **kwargs)
 
     def __increase_volume(self, volume):
         """Raise the tank's volume by `volume`"""
-        self.volume += volume
+        self.initial_volume += volume
         return volume
 
     def __decrease_volume(self, volume):
         """Lower the tank's volume by `volume`
         If it cannot decrease the requested volume, self.volume doesn't change"""
-        self.volume -= self.__check_volume(volume)
+        self.initial_volume -= self.__check_volume(volume)
         return volume
 
     def __check_volume(self, volume):
         """See if the tank has enough volume to provide the requested `volume` amount
         """
-        if self.volume <= 0:
+        if self.initial_volume <= 0:
             volume = 0
-        elif self.volume > volume:
+        elif self.initial_volume > volume:
             volume = volume
         else:
-            volume = self.volume
+            volume = self.initial_volume
         return volume
 
     def __update_fluid(self, new_context):
@@ -304,10 +288,8 @@ class Tank(Device):
             This verifies that the connected device accepts the amount of volume before
             we decrease our volume. e.g. full tank.
         """
-        self.previous_output_device = to_device
-        accepted_volume = self.previous_output_device.input(self.fluid, self.__check_volume(volume))
+        accepted_volume = to_device.input(self.fluid, self.__check_volume(volume))
         self.__decrease_volume(accepted_volume)
-        self.previous_output_device = None
         return accepted_volume
 
     def worker(self):
@@ -320,9 +302,10 @@ class Reservoir(Tank):
     yaml_loader = yaml.CLoader
 
     def __init__(self, **kwargs):
+        self.input_per_cycle = 10
         super(Reservoir, self).__init__(device_type='reservoir', **kwargs)
 
     def worker(self):
         """Make sure that we don't run dry.
         """
-        self.volume += 10
+        self.initial_volume += self.input_per_cycle

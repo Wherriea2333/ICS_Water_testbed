@@ -24,7 +24,8 @@ def build_simulation(config, math_parser):
     # check and attribute the appropriate string parser to use math formulas in distribution of water in devices
     if math_parser not in allowed_math_type:
         raise ValueError(f'Math type {math_parser} is not allowed.')
-    for device in devices:
+    log.info(devices)
+    for device in devices.values():
         device.math_parser = math_parser
 
     # process connections
