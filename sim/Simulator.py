@@ -6,8 +6,6 @@ from sim.Fluid import *
 from sim.Sensor import *
 from sim.utils import parse_yml, build_simulation
 
-from time import sleep
-
 logging.basicConfig()
 log = logging.getLogger('phy_sim')
 log.setLevel(logging.WARN)
@@ -22,7 +20,7 @@ def foo():
 
 class Simulator(object):
 
-    def __init__(self, debug=0):
+    def __init__(self, debug=0, math_parser='proportional'):
         signal.signal(signal.SIGINT, self.sig_handler)
 
         self.path_to_yaml_config = None
@@ -30,6 +28,7 @@ class Simulator(object):
         self.settings = None
         self.devices = None
         self.sensors = None
+        self.math_parser = math_parser
 
         if debug == 1:
             log.setLevel(logging.INFO)
@@ -45,7 +44,7 @@ class Simulator(object):
         """
         self.path_to_yaml_config = path_to_yaml_config
         self.config = parse_yml(path_to_yaml_config)
-        simulation = build_simulation(self.config)
+        simulation = build_simulation(self.config, self.math_parser)
         self.settings = simulation['settings']
         self.devices = simulation['devices']
         self.sensors = simulation['sensors']

@@ -4,13 +4,13 @@ from sim.Device import *
 
 
 def parse_yml(path_to_yml_file):
-    config = None
     with open(path_to_yml_file, 'r') as stream:
         config = yaml.load(stream, Loader=CLoader)
     return config
 
 
-def build_simulation(config):
+def build_simulation(config, math_parser):
+    allowed_math_type = ['proportional', 'sympy', 'wolfram']
     settings = config['settings']
     devices = {}
     sensors = {}
@@ -21,6 +21,12 @@ def build_simulation(config):
         # yaml.dump(device, sys.stdout)
         # print(device.fluid)
 
+    # check and attribute the appropriate string parser to use math formulas in distribution of water in devices
+    if math_parser not in allowed_math_type:
+        raise ValueError(f'Math type {math_parser} is not allowed.')
+    for device in devices:
+        device.math_parser = math_parser
+
     # process connections
     for device_label, connections in config['connections'].items():
         if 'outputs' in connections:
@@ -29,6 +35,11 @@ def build_simulation(config):
         if 'inputs' in connections:
             for dev_input in connections['inputs']:
                 devices[device_label].add_input(devices[dev_input])
+
+    # process distributions
+    # TODO: not finished
+    for device_label, distribution in config['distributions'].items():
+        devices[device_label].set_distribution(distribution)
 
     # process sensors
     for sensor in config['sensors']:

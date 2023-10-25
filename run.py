@@ -1,4 +1,5 @@
 import argparse
+
 from sim.Simulator import Simulator
 
 if __name__ == '__main__':
@@ -7,9 +8,12 @@ if __name__ == '__main__':
         '-c', '--config', help='YAML configuration file to load', required=True)
     parser.add_argument('-v', '--verbose', help='Set verbosity level',
                         type=int, default=0, choices=[0, 1, 2], action='store')
+
+    parser.add_argument('-m', '--math_parser', help='Type of math expression parser', type=str,
+                        default='proportional', choices=['proportional', 'sympy', 'wolfram'], action='store_const')
     args = parser.parse_args()
 
-    sim = Simulator(debug=args.verbose)
+    sim = Simulator(debug=args.verbose, math_parser=args.math_parser)
     sim.load_yml(args.config)
 
     sim.start()

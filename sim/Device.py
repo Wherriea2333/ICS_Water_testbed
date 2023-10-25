@@ -1,9 +1,9 @@
 import logging
-import threading
-import time
 import uuid
 from abc import abstractmethod
 
+import sympy.parsing.sympy_parser as sp
+import sympy.parsing.mathematica as mp
 import yaml
 
 from sim.Fluid import Fluid
@@ -28,8 +28,9 @@ class InvalidDevice(Exception):
 # Devices
 class Device(yaml.YAMLObject):
     allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'chlorinator']
+    allowed_math_type = ['proportional', 'sympy', 'wolfram']
 
-    def __init__(self, device_type=None, fluid=None, label='', state=None, worker_frequency=1):
+    def __init__(self, device_type=None, fluid=None, label='', state=None):
         self.uid = str(uuid.uuid4())[:8]
         self.device_type = device_type
         self.label = label
@@ -37,11 +38,10 @@ class Device(yaml.YAMLObject):
         self.output_devices = {}
         self.fluid = fluid
         self.active = False
-        # Time interval in seconds. set to None if the device doesn't need a worker loop
-        self.worker_frequency = worker_frequency
-        self.speed = 1
         self.state = state
-        self.previous_output_device = None
+        self.math_parser = None
+        self.to_device_expr = {}
+        self.symbol_dict = {}
 
         if (not self.device_type) or (self.device_type not in self.allowed_device_types):
             raise InvalidDevice(f"{self.device_type} in not a valid device type")
@@ -68,22 +68,6 @@ class Device(yaml.YAMLObject):
             self.output_devices[device.uid] = device
             device.add_input(self)
             log.info(f"{self}: Added output -> {device}")
-
-    def run(self):
-        # TODO: not used for the moment
-        """Executed at least once and at regular intervals if `worker_frequency` is not None.
-            Used to call worker method
-        """
-        if self.active:
-            # log.debug(f"{self} up at : {datetime.now()}")
-            self.worker()
-
-            if self.worker_frequency:
-                # Calculate the next run time based on simulation speed and device frequency
-                delay = (-time.time() % (self.speed * self.worker_frequency))
-                t = threading.Timer(delay, self.run)
-                t.daemon = True
-                t.start()
 
     def activate(self):
         """Set this device as active so the worker gets called"""
@@ -140,6 +124,7 @@ class Pump(Device):
 
     def __init__(self, device_type='pump', state='off', **kwargs):
         state = bool(['off', 'on'].index(state))
+        self.volume_per_cycle = 1
         super(Pump, self).__init__(device_type=device_type, state=state, **kwargs)
 
     def worker(self):
@@ -147,20 +132,22 @@ class Pump(Device):
         """
         if self.state:
             for i in self.input_devices:
-                self.input_devices[i].output(self, 1)
+                self.input_devices[i].output(self, self.volume_per_cycle)
 
-    # TODO: what happen if a pump want to output to a devices which is closed?
     def input(self, fluid, volume=1):
         """Receive the fluid, add it to output devices equally"""
         if self.state:
             self.fluid = fluid
-            if self.previous_output_device is None:
+            if self.math_parser == 'proportional':
                 for o in self.output_devices:
-                    # Send the fluid on to all outputs
+                    # Send the fluid on to all outputs equally
                     self.output_devices[o].input(fluid, volume / len(self.output_devices))
-            else:
-                self.previous_output_device.input(fluid, volume)
-                self.previous_output_device = None
+            elif self.math_parser == 'sympy':
+                for devices_label, expr in self.to_device_expr:
+                    self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
+            elif self.math_parser == 'wolfram':
+                for devices_label, expr in self.output_devices:
+                    self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
             return volume
         else:
             return 0
