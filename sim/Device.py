@@ -7,6 +7,7 @@ import sympy.parsing.sympy_parser as sp
 import yaml
 
 from sim.Fluid import Fluid
+from sim.utils import Allowed_math_type
 
 log = logging.getLogger('phy_sim')
 
@@ -28,7 +29,6 @@ class InvalidDevice(Exception):
 # Devices
 class Device(yaml.YAMLObject):
     allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'chlorinator']
-    allowed_math_type = ['proportional', 'sympy', 'wolfram']
 
     def __init__(self, device_type=None, fluid=None, label='', state=None):
         self.uid = str(uuid.uuid4())[:8]
@@ -70,6 +70,21 @@ class Device(yaml.YAMLObject):
             self.output_devices[device.uid] = device
             device.add_input(self)
             log.info(f"{self}: Added output -> {device}")
+
+    def add_symbol(self, label: str, value):
+        """Add a symbol to the symbol dict used for sympy"""
+        self.symbol_dict.update({label: value})
+        log.debug(f"Added Label: {label} -> {value} in symbols")
+
+    def add_to_device_expr(self, label: str, value):
+        """Add expression to an output to a device"""
+        self.to_device_expr.update({label: value})
+        log.debug(f"Added Expression: push to {label} amount of {value} fluid")
+
+    def add_from_device_expr(self, label: str, value):
+        """Add expression to an input from a device"""
+        self.from_device_expr.update({label: value})
+        log.debug(f"Added Expression: pull from {label} amount of {value} fluid")
 
     def activate(self):
         """Set this device as active so the worker gets called"""
@@ -117,28 +132,32 @@ class Device(yaml.YAMLObject):
         return 0
 
     def input_fluid(self, fluid, volume):
-        if self.math_parser == 'proportional':
+        if self.math_parser == Allowed_math_type.proportional.value:
             for o in self.output_devices:
                 # Send the fluid on to all outputs equally
                 self.output_devices[o].input(fluid, volume / len(self.output_devices))
-        elif self.math_parser == 'sympy':
-            for devices_label, expr in self.to_device_expr:
-                self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
-        elif self.math_parser == 'wolfram':
-            for devices_label, expr in self.to_device_expr:
-                self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
+        else:
+            self.symbol_dict['current_flow_rate'] = self.current_flow_rate
+            if self.math_parser == Allowed_math_type.sympy.value:
+                for devices_label, expr in self.to_device_expr:
+                    self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
+            elif self.math_parser == Allowed_math_type.wolfram.value:
+                for devices_label, expr in self.to_device_expr:
+                    self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
 
     def output_fluid(self, volume):
-        if self.math_parser == 'proportional':
+        if self.math_parser == Allowed_math_type.proportional.value:
             for o in self.input_devices:
                 # Send the fluid on to all outputs equally
                 self.input_devices[o].output(self, volume / len(self.output_devices))
-        elif self.math_parser == 'sympy':
-            for devices_label, expr in self.from_device_expr:
-                self.input_devices[devices_label].output(self, sp.parse_expr(expr, local_dict=self.symbol_dict))
-        elif self.math_parser == 'wolfram':
-            for devices_label, expr in self.from_device_expr:
-                self.input_devices[devices_label].output(self, mp.mathematica(expr).subs(self.symbol_dict))
+        else:
+            self.symbol_dict['requested_volume'] = volume
+            if self.math_parser == Allowed_math_type.sympy.value:
+                for devices_label, expr in self.from_device_expr:
+                    self.input_devices[devices_label].output(self, sp.parse_expr(expr, local_dict=self.symbol_dict))
+            elif self.math_parser == Allowed_math_type.wolfram.value:
+                for devices_label, expr in self.from_device_expr:
+                    self.input_devices[devices_label].output(self, mp.mathematica(expr).subs(self.symbol_dict))
 
     def __repr__(self):
         return f"Device: {self.uid} || {self.device_type} || {self.label}"

@@ -10,7 +10,7 @@ class Sensor(Device):
         self.inputs = None
         self.fluid = None
         self.device_to_monitor = None
-        super(Sensor, self).__init__(device_type="sensor", worker_frequency=worker_frequency, **kwargs)
+        super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def output(self, to_device, volume):
         """Output used for pass-through sensors.
@@ -105,7 +105,7 @@ class VolumeSensor(Sensor):
     yaml_tag = u'!volume'
     yaml_loader = yaml.CLoader
 
-    def __init__(self, connected_to=None, worker_frequency=1, **kwargs):
+    def __init__(self, connected_to=None, **kwargs):
         self.volume = 0
         self.device_to_monitor = connected_to
         super(Sensor, self).__init__(device_type="sensor", **kwargs)

@@ -29,6 +29,12 @@ connections:
     outputs:
       - municipaltank
 
+
+symbols:
+  x: 10
+  y: 100
+  z: 1000
+
 sensors:
   - !volume
     label: reservoirsensor1

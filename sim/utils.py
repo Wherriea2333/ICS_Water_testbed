@@ -1,6 +1,14 @@
+from enum import Enum
+
 from yaml import CLoader
 
 from sim.Device import *
+
+
+class Allowed_math_type(Enum):
+    proportional = 'proportional'
+    sympy = 'sympy'
+    wolfram = 'wolfram'
 
 
 def parse_yml(path_to_yml_file):
@@ -10,7 +18,6 @@ def parse_yml(path_to_yml_file):
 
 
 def build_simulation(config, math_parser):
-    allowed_math_type = ['proportional', 'sympy', 'wolfram']
     settings = config['settings']
     devices = {}
     sensors = {}
@@ -22,7 +29,7 @@ def build_simulation(config, math_parser):
         # print(device.fluid)
 
     # check and attribute the appropriate string parser to use math formulas in distribution of water in devices
-    if math_parser not in allowed_math_type:
+    if math_parser not in [e.value for e in Allowed_math_type]:
         raise ValueError(f'Math type {math_parser} is not allowed.')
     log.info(devices)
     for device in devices.values():
@@ -36,11 +43,17 @@ def build_simulation(config, math_parser):
         if 'inputs' in connections:
             for dev_input in connections['inputs']:
                 devices[device_label].add_input(devices[dev_input])
+        if 'to_device_expr' in connections:
+            for dev_output_expr in connections['to_device_expr']:
+                devices[device_label].add_to_device_expr(device_label, dev_output_expr)
+        if 'from_device_expr' in connections:
+            for dev_input_expr in connections['from_device_expr']:
+                devices[device_label].add_from_device_expr(device_label, dev_input_expr)
 
-    # process distributions
-    # TODO: not finished
-    # for device_label, distribution in config['distributions'].items():
-    #     devices[device_label].set_distribution(distribution)
+    for device in devices.values():
+        device.symbol_dict.update(config['symbols'])
+        device.symbol_dict.update(devices)
+        log.debug(device.symbol_dict)
 
     # process sensors
     for sensor in config['sensors']:
