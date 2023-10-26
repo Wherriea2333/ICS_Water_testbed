@@ -6,23 +6,18 @@ devices:
     label: reservoir1
     volume: 1000
     fluid: !water {}
-#    fluid: !!python/object:sim.Fluid.Water { fluid_type: water }
   - !valve
     label: valve1
     state: 'open'
-    capacity: 2
   - !pump
     label: pump1
+    volume_per_cycle: 10
     state: 'on'
-  - !pump
-    label: pump2
-    state: 'on'
-  - !filter
-    label: filter1
   - !valve
     label: valve2
     state: 'open'
-    capacity: 10
+  - !filter
+    label: filter1
   - !tank
     label: municipaltank
 
@@ -35,16 +30,13 @@ connections:
      - pump1
   pump1:
     outputs:
-     - pump2
-  pump2:
-    outputs:
       - filter1
   filter1:
     outputs:
-     - valve2
+      - valve2
   valve2:
     outputs:
-     - municipaltank
+      - municipaltank
 
 sensors:
   - !volume

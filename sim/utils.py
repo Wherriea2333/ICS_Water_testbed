@@ -39,8 +39,8 @@ def build_simulation(config, math_parser):
 
     # process distributions
     # TODO: not finished
-    for device_label, distribution in config['distributions'].items():
-        devices[device_label].set_distribution(distribution)
+    # for device_label, distribution in config['distributions'].items():
+    #     devices[device_label].set_distribution(distribution)
 
     # process sensors
     for sensor in config['sensors']:
