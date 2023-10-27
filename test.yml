@@ -22,6 +22,8 @@ connections:
   reservoir1:
     outputs:
       - pump1
+#    from_device_expr:
+#      pump1: 3*x+66-y
   pump1:
     outputs:
       - pump2
