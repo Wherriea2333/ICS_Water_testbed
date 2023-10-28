@@ -2,6 +2,7 @@ import logging
 import uuid
 from abc import abstractmethod
 
+import sympy.core.evalf as sp_evalf
 import sympy.parsing.mathematica as mp
 import sympy.parsing.sympy_parser as sp
 import yaml
@@ -44,6 +45,7 @@ class Device(yaml.YAMLObject):
         self.to_device_expr = {}
         self.from_device_expr = {}
         self.symbol_dict = {}
+        self.precision = 10
 
         if (not self.device_type) or (self.device_type not in self.allowed_device_types):
             raise InvalidDevice(f"{self.device_type} in not a valid device type")
@@ -139,25 +141,29 @@ class Device(yaml.YAMLObject):
         else:
             self.symbol_dict['current_flow_rate'] = self.current_flow_rate
             if self.math_parser == Allowed_math_type.sympy.value:
-                for devices_label, expr in self.to_device_expr:
-                    self.output_devices[devices_label].input(fluid, sp.parse_expr(expr, local_dict=self.symbol_dict))
+                for devices_label, expr in self.to_device_expr.items():
+                    self.symbol_dict[devices_label] \
+                        .input(fluid, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
             elif self.math_parser == Allowed_math_type.wolfram.value:
-                for devices_label, expr in self.to_device_expr:
-                    self.output_devices[devices_label].input(fluid, mp.mathematica(expr).subs(self.symbol_dict))
+                for devices_label, expr in self.to_device_expr.items():
+                    self.symbol_dict[devices_label] \
+                        .input(fluid, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
     def output_fluid(self, volume):
         if self.math_parser == Allowed_math_type.proportional.value:
             for o in self.input_devices:
                 # Send the fluid on to all outputs equally
-                self.input_devices[o].output(self, volume / len(self.output_devices))
+                self.input_devices[o].output(self,sp_evalf.N(volume / len(self.output_devices), self.precision))
         else:
             self.symbol_dict['requested_volume'] = volume
             if self.math_parser == Allowed_math_type.sympy.value:
-                for devices_label, expr in self.from_device_expr:
-                    self.input_devices[devices_label].output(self, sp.parse_expr(expr, local_dict=self.symbol_dict))
+                for devices_label, expr in self.from_device_expr.items():
+                    self.symbol_dict[devices_label] \
+                        .output(self, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
             elif self.math_parser == Allowed_math_type.wolfram.value:
-                for devices_label, expr in self.from_device_expr:
-                    self.input_devices[devices_label].output(self, mp.mathematica(expr).subs(self.symbol_dict))
+                for devices_label, expr in self.from_device_expr.items():
+                    self.symbol_dict[devices_label] \
+                        .output(self, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
     def __repr__(self):
         return f"Device: {self.uid} || {self.device_type} || {self.label}"

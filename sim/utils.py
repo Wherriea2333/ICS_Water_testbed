@@ -4,6 +4,9 @@ from yaml import CLoader
 
 from sim.Device import *
 
+logging.basicConfig()
+log = logging.getLogger('phy_sim')
+
 
 class Allowed_math_type(Enum):
     proportional = 'proportional'
@@ -28,10 +31,9 @@ def build_simulation(config, math_parser):
         # yaml.dump(device, sys.stdout)
         # print(device.fluid)
 
-    # check and attribute the appropriate string parser to use math formulas in distribution of water in devices
+    # check then attribute the appropriate string parser to use math formulas in distribution of water in devices
     if math_parser not in [e.value for e in Allowed_math_type]:
         raise ValueError(f'Math type {math_parser} is not allowed.')
-    log.info(devices)
     for device in devices.values():
         device.math_parser = math_parser
 
@@ -44,16 +46,26 @@ def build_simulation(config, math_parser):
             for dev_input in connections['inputs']:
                 devices[device_label].add_input(devices[dev_input])
         if 'to_device_expr' in connections:
-            for dev_output_expr in connections['to_device_expr']:
-                devices[device_label].add_to_device_expr(device_label, dev_output_expr)
+            if math_parser == Allowed_math_type.proportional.value:
+                log.warning(f"Math parser is {Allowed_math_type.proportional.value}, Should not have expressions. ")
+            for to_device_label, dev_output_expr in connections['to_device_expr'].items():
+                devices[device_label].add_to_device_expr(to_device_label, dev_output_expr)
         if 'from_device_expr' in connections:
-            for dev_input_expr in connections['from_device_expr']:
-                devices[device_label].add_from_device_expr(device_label, dev_input_expr)
+            if math_parser == Allowed_math_type.proportional.value:
+                log.warning(f"Math parser is {Allowed_math_type.proportional.value}, Should not have expressions. ")
+            for from_device_label, dev_input_expr in connections['from_device_expr'].items():
+                devices[device_label].add_from_device_expr(from_device_label, dev_input_expr)
+
+    for device in devices.values():
+        log.debug(f"{device}")
+        log.debug(f"symbols:  {device.symbol_dict}")
+        log.debug(f"from device expr:  {device.from_device_expr}")
+        log.debug(f"to device expr:  {device.to_device_expr}")
 
     for device in devices.values():
         device.symbol_dict.update(config['symbols'])
         device.symbol_dict.update(devices)
-        log.debug(device.symbol_dict)
+        log.debug(f"devices symbols:  {device.symbol_dict}")
 
     # process sensors
     for sensor in config['sensors']:

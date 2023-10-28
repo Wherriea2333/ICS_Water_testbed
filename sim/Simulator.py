@@ -17,7 +17,7 @@ def foo():
     fluid = Fluid()
     sensor = Sensor()
 
-
+# TODO: after each cycle input volume = output volume into tanks ---
 class Simulator(object):
 
     def __init__(self, debug=0, math_parser='proportional'):
@@ -51,6 +51,7 @@ class Simulator(object):
         # self.plcs = simulation['plcs']
 
         self.set_speed(self.settings['speed'])
+        self.set_precision(self.settings['precision'])
 
     def start(self):
         """Start the simulation"""
@@ -105,5 +106,13 @@ class Simulator(object):
     def restart(self):
         """Stop and reload the simulation from the original config"""
         self.pause()
-        self.load_yml(self.path_to_yaml_config, )
+        self.load_yml(self.path_to_yaml_config)
         self.start()
+
+    def set_precision(self, precision):
+        """set the number of output digits of sensors and devices"""
+        for device in self.devices.values():
+            device.precision = precision
+
+        for sensor in self.sensors.values():
+            sensor.precision = precision

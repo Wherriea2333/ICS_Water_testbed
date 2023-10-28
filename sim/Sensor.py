@@ -1,6 +1,7 @@
 from sim.Device import Device
 import logging
 import yaml
+import sympy.core.evalf as sp_evalf
 log = logging.getLogger('phy_sim')
 
 
@@ -10,6 +11,7 @@ class Sensor(Device):
         self.inputs = None
         self.fluid = None
         self.device_to_monitor = None
+        self.precision = 10
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def output(self, to_device, volume):
@@ -113,9 +115,9 @@ class VolumeSensor(Sensor):
     def worker(self):
         """Get the volume of `device_to_monitor`
         """
-        self.volume = self.device_to_monitor.volume
+        self.volume = sp_evalf.N(self.device_to_monitor.volume, self.precision)
 
     def read_sensor(self):
         """ Report sensor value
         """
-        return self.volume
+        return sp_evalf.N(self.volume, self.precision)
