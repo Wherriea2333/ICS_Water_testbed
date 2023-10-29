@@ -17,7 +17,7 @@ def foo():
     fluid = Fluid()
     sensor = Sensor()
 
-# TODO: after each cycle input volume = output volume into tanks ---
+
 class Simulator(object):
 
     def __init__(self, debug=0, math_parser='proportional'):
@@ -29,6 +29,8 @@ class Simulator(object):
         self.devices = None
         self.sensors = None
         self.math_parser = math_parser
+        self.max_cycle = None
+        self.current_tanks_volume = 0
 
         if debug == 1:
             log.setLevel(logging.INFO)
@@ -52,6 +54,8 @@ class Simulator(object):
 
         self.set_speed(self.settings['speed'])
         self.set_precision(self.settings['precision'])
+        self.max_cycle = self.settings['max_cycle']
+        self.set_current_tanks_volume()
 
     def start(self):
         """Start the simulation"""
@@ -61,9 +65,12 @@ class Simulator(object):
         for sensor in self.sensors.values():
             sensor.activate()
         log.info(self.devices)
-        for i in range(10):
+        for i in range(self.max_cycle):
+            for device in self.devices.values():
+                device.reset_current_flow_rate()
             for device in self.devices.values():
                 device.worker()
+            # check all reservoir
             for sensor in self.sensors.values():
                 sensor.worker()
                 log.info(sensor.read_sensor())
@@ -84,9 +91,6 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.deactivate()
-
-        # self.plcservice.stop_server()
-        # self.plcservice.join()
 
     def stop(self):
         """Stop and destroy the simulation"""
@@ -116,3 +120,9 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.precision = precision
+
+    def set_current_tanks_volume(self):
+        """get the initial volume of fluid in tanks"""
+        for device in self.devices.values():
+            if isinstance(device, Tank):
+                self.current_tanks_volume += device.volume

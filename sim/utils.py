@@ -28,8 +28,6 @@ def build_simulation(config, math_parser):
     # Process devices
     for device in config['devices']:
         devices[device.label] = device
-        # yaml.dump(device, sys.stdout)
-        # print(device.fluid)
 
     # check then attribute the appropriate string parser to use math formulas in distribution of water in devices
     if math_parser not in [e.value for e in Allowed_math_type]:
@@ -74,3 +72,15 @@ def build_simulation(config, math_parser):
         sensors[sensor.label] = sensor
 
     return {'settings': settings, 'devices': devices, 'sensors': sensors}
+
+
+def check_reservoir_volume(devices: {}, last_volume):
+    current_volume = 0
+    for device in devices.values():
+        if isinstance(device, Tank):
+            current_volume += device.volume
+        if isinstance(device, Reservoir):
+            current_volume -= device.input_per_cycle
+    if current_volume != last_volume:
+        log.warning(f"Input to tank not equal to output !")
+    return current_volume

@@ -1,0 +1,147 @@
+settings:
+  speed: 1
+  precision: 5
+  max_cycle: 10
+
+devices:
+  - !reservoir
+    label: T-101
+    volume: 1000
+    fluid: !water {}
+    input_per_cycle: 10
+  - !pump
+    label: P-101
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-102
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-201
+    state: 'open'
+  - !tank
+    label: T-301
+    volume: 1000
+    fluid: !water {}
+  - !pump
+    label: P-301
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-302
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-301
+    state: 'open'
+  - !valve
+    label: MV-302
+    state: 'open'
+  # UF Membrane....
+  - !filter
+    label: UF-301
+  - !tank
+    label: T-401
+    volume: 1000
+    fluid: !water{}
+  - !pump
+    label: P-401
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-402
+    volume_per_cycle: 10
+    state: 'on'
+  # UV dechlorinator
+  - !filter
+    label: UV-401
+  - !filter
+    label: Filter-501
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'on'
+  # RO vessels
+  - !tank
+    label: RO-501
+    volume: 200
+    fluid: !water {}
+  - !tank
+    label: RO-502
+    volume: 200
+    fluid: !water {}
+  - !tank
+    label: RO-503
+    volume: 200
+    fluid: !water {}
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'off'
+  - !valve
+    label: MV-501
+    state: 'open'
+  - !valve
+    label: MV-502
+    state: 'closed'
+  - !valve
+    label: MV-503
+    state: 'closed'
+  - !tank
+    label: RO-601
+    volume: 1000
+    fluid: !water {}
+  - !tank
+    label: RO-602
+    volume: 1000
+    fluid: !water {}
+  - !tank
+    label: RO-603
+    volume: 1000
+    fluid: !water {}
+  - !pump
+    label: P-601
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-602
+    volume_per_cycle: 10
+    state: 'off'
+  - !pump
+    label: P-603
+    volume_per_cycle: 10
+    state: 'off'
+
+
+connections:
+  reservoir1:
+    outputs:
+      - pump1
+  pump1:
+    outputs:
+      - municipaltank
+    to_device_expr:
+      municipaltank: "2 * pump1.volume_per_cycle / 3"
+
+
+symbols:
+  x: 10
+  y: 100
+  z: 1000
+
+sensors:
+  - !volume
+    label: reservoirsensor1
+    connected_to: reservoir1
+  - !volume
+    label: municipaltanksensor
+    connected_to: municipaltank

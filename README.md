@@ -7,16 +7,21 @@
 `python run.py -c test.yml -v 1`
 
 Option:
-
-- -m (--math) : 'proportional'/'sympy'/'wolfram'
+- -c (--config) : YAML configuration file to load
+- -v (--verbose) [0, 1, 2] : Set verbosity level
+- -m (--math) ['proportional','sympy','wolfram'] : Type of math expression parser
 
 ## How to construct a simulation
 ### 1. Settings
-        speed: The speed at which a simulation tour is done
+    speed: The speed at which a simulation tour is done
+    precision: The number of digits of numbers
+    max_cycle: The number of cycles the simulation will run
 Structure:
 ```yaml
 settings:
   speed: 1
+  precision: 5
+  max_cycle: 10
 ```
 ### 2. Devices
 Authorized tag are :

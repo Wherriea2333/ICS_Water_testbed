@@ -88,11 +88,13 @@ class Device(yaml.YAMLObject):
         self.from_device_expr.update({label: value})
         log.debug(f"Added Expression: pull from {label} amount of {value} fluid")
 
+    def reset_current_flow_rate(self):
+        self.current_flow_rate = 0
+
     def activate(self):
         """Set this device as active so the worker gets called"""
         if not self.active:
             self.active = True
-            # self.run()
         log.info(f"{self}: Active")
 
     def deactivate(self):
@@ -182,8 +184,7 @@ class Pump(Device):
         """Manipulate the fluid just as this device would in the real world
         """
         if self.state:
-            for i in self.input_devices:
-                self.input_devices[i].output(self, self.volume_per_cycle)
+            self.output_fluid(self.volume_per_cycle)
 
     def input(self, fluid, volume=1):
         """Receive the fluid, add it to output devices equally"""
@@ -196,11 +197,11 @@ class Pump(Device):
             return 0
 
     def output(self, to_device, volume=1):
-        # TODO: in series, can use expr
+        """called only if 'pump' in series"""
         if self.state:
-            if self.current_flow_rate >= self.volume_per_cycle:
-                # TODO: BIG WARNING
-                log.info(f"EXCEED {self} volume_per_cycle")
+            if self.current_flow_rate + volume >= self.volume_per_cycle:
+                log.warning(f"EXCEED {self} volume_per_cycle")
+            self.output_fluid(volume)
             return self.fluid
         else:
             return 0
@@ -267,7 +268,6 @@ class Filter(Device):
 
     def input(self, fluid, volume=1):
         self.current_flow_rate += volume
-        log.info(f"volume through filter: {volume}")
         self.input_fluid(fluid, volume)
         return volume
 
