@@ -137,9 +137,13 @@ class Device(yaml.YAMLObject):
 
     def input_fluid(self, fluid, volume):
         if self.math_parser == Allowed_math_type.proportional.value:
+            open_device_number = 0
+            for o in self.output_devices:
+                if self.output_devices[o].state or self.output_devices[o].state is None:
+                    open_device_number += 1
             for o in self.output_devices:
                 # Send the fluid on to all outputs equally
-                self.output_devices[o].input(fluid, volume / len(self.output_devices))
+                self.output_devices[o].input(fluid, volume / open_device_number)
         else:
             self.symbol_dict['current_flow_rate'] = self.current_flow_rate
             if self.math_parser == Allowed_math_type.sympy.value:
@@ -153,9 +157,13 @@ class Device(yaml.YAMLObject):
 
     def output_fluid(self, volume):
         if self.math_parser == Allowed_math_type.proportional.value:
+            open_device_number = 0
             for o in self.input_devices:
-                # Send the fluid on to all outputs equally
-                self.input_devices[o].output(self,sp_evalf.N(volume / len(self.output_devices), self.precision))
+                if self.input_devices[o].state or self.input_devices[o].state is None:
+                    open_device_number += 1
+            for o in self.input_devices:
+                # Request the fluid from all inputs devices equally
+                self.input_devices[o].output(self, sp_evalf.N(volume / open_device_number, self.precision))
         else:
             self.symbol_dict['requested_volume'] = volume
             if self.math_parser == Allowed_math_type.sympy.value:
@@ -333,7 +341,7 @@ class Reservoir(Tank):
     yaml_tag = u'!reservoir'
     yaml_loader = yaml.CLoader
 
-    def __init__(self, input_per_cycle=10, **kwargs):
+    def __init__(self, input_per_cycle=0, **kwargs):
         self.input_per_cycle = input_per_cycle
         super(Reservoir, self).__init__(device_type='reservoir', **kwargs)
 

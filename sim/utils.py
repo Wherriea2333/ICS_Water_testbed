@@ -1,7 +1,6 @@
 from enum import Enum
 
 from yaml import CLoader
-
 from sim.Device import *
 
 logging.basicConfig()
@@ -60,10 +59,11 @@ def build_simulation(config, math_parser):
         log.debug(f"from device expr:  {device.from_device_expr}")
         log.debug(f"to device expr:  {device.to_device_expr}")
 
-    for device in devices.values():
-        device.symbol_dict.update(config['symbols'])
-        device.symbol_dict.update(devices)
-        log.debug(f"devices symbols:  {device.symbol_dict}")
+    if math_parser != Allowed_math_type.proportional.value and math_parser in [e.value for e in Allowed_math_type]:
+        for device in devices.values():
+            device.symbol_dict.update(config['symbols'])
+            device.symbol_dict.update(devices)
+            log.debug(f"devices symbols:  {device.symbol_dict}")
 
     # process sensors
     for sensor in config['sensors']:
@@ -74,13 +74,4 @@ def build_simulation(config, math_parser):
     return {'settings': settings, 'devices': devices, 'sensors': sensors}
 
 
-def check_reservoir_volume(devices: {}, last_volume):
-    current_volume = 0
-    for device in devices.values():
-        if isinstance(device, Tank):
-            current_volume += device.volume
-        if isinstance(device, Reservoir):
-            current_volume -= device.input_per_cycle
-    if current_volume != last_volume:
-        log.warning(f"Input to tank not equal to output !")
-    return current_volume
+

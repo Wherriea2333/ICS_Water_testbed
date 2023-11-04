@@ -18,6 +18,18 @@ def foo():
     sensor = Sensor()
 
 
+def check_reservoir_volume(devices: {}, last_volume):
+    current_volume = 0
+    for device in devices.values():
+        if isinstance(device, Tank):
+            current_volume += device.volume
+        if isinstance(device, Reservoir):
+            current_volume -= device.input_per_cycle
+    if current_volume != last_volume:
+        log.warning(f"Input to tank not equal to output !")
+    return current_volume
+
+
 class Simulator(object):
 
     def __init__(self, debug=0, math_parser='proportional'):
@@ -71,9 +83,10 @@ class Simulator(object):
             for device in self.devices.values():
                 device.worker()
             # check all reservoir
+            check_reservoir_volume(self.devices, self.current_tanks_volume)
             for sensor in self.sensors.values():
                 sensor.worker()
-                log.info(sensor.read_sensor())
+                log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
 
         # for plc in self.plcs:
         #     for sensor in self.plcs[plc]['sensors']:

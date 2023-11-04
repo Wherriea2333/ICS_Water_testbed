@@ -1,5 +1,7 @@
 settings:
   speed: 1
+  precision: 5
+  max_cycle: 10
 
 devices:
   - !reservoir
@@ -37,6 +39,8 @@ connections:
   valve2:
     outputs:
       - municipaltank
+
+symbols:
 
 sensors:
   - !volume
