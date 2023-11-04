@@ -13,6 +13,9 @@ devices:
     label: pump1
     volume_per_cycle: 10
     state: 'on'
+  - !valve
+    label: valve1
+    state: 'open'
   - !tank
     label: municipaltank
 
@@ -24,11 +27,16 @@ connections:
 #      pump1: "pump1.volume_per_cycle"
   pump1:
     outputs:
-      - municipaltank
+      - valve1
     output_devices_expr:
-      municipaltank: "pump1.volume_per_cycle"
+      valve1: "volume"
     input_devices_expr:
       reservoir1: "pump1.volume_per_cycle"
+  valve1:
+    outputs:
+      - municipaltank
+    output_devices_expr:
+      municipaltank: "volume"
 
 
 

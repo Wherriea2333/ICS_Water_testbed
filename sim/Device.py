@@ -146,6 +146,7 @@ class Device(yaml.YAMLObject):
                 self.output_devices[o].input(fluid, volume / open_device_number)
         else:
             self.symbol_dict['current_flow_rate'] = self.current_flow_rate
+            self.symbol_dict['volume'] = volume
             if self.math_parser == Allowed_math_type.sympy.value:
                 for devices_label, expr in self.output_devices_expr.items():
                     self.symbol_dict[devices_label] \
