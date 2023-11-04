@@ -42,22 +42,22 @@ def build_simulation(config, math_parser):
         if 'inputs' in connections:
             for dev_input in connections['inputs']:
                 devices[device_label].add_input(devices[dev_input])
-        if 'to_device_expr' in connections:
+        if 'output_devices_expr' in connections:
             if math_parser == Allowed_math_type.proportional.value:
                 log.warning(f"Math parser is {Allowed_math_type.proportional.value}, Should not have expressions. ")
-            for to_device_label, dev_output_expr in connections['to_device_expr'].items():
+            for to_device_label, dev_output_expr in connections['output_devices_expr'].items():
                 devices[device_label].add_to_device_expr(to_device_label, dev_output_expr)
-        if 'from_device_expr' in connections:
+        if 'input_devices_expr' in connections:
             if math_parser == Allowed_math_type.proportional.value:
                 log.warning(f"Math parser is {Allowed_math_type.proportional.value}, Should not have expressions. ")
-            for from_device_label, dev_input_expr in connections['from_device_expr'].items():
+            for from_device_label, dev_input_expr in connections['input_devices_expr'].items():
                 devices[device_label].add_from_device_expr(from_device_label, dev_input_expr)
 
     for device in devices.values():
         log.debug(f"{device}")
         log.debug(f"symbols:  {device.symbol_dict}")
-        log.debug(f"from device expr:  {device.from_device_expr}")
-        log.debug(f"to device expr:  {device.to_device_expr}")
+        log.debug(f"input devices expr:  {device.input_devices_expr}")
+        log.debug(f"output devices expr:  {device.output_devices_expr}")
 
     if math_parser != Allowed_math_type.proportional.value and math_parser in [e.value for e in Allowed_math_type]:
         for device in devices.values():

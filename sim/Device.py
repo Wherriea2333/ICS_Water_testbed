@@ -42,8 +42,8 @@ class Device(yaml.YAMLObject):
         self.active = False
         self.state = state
         self.math_parser = None
-        self.to_device_expr = {}
-        self.from_device_expr = {}
+        self.output_devices_expr = {}
+        self.input_devices_expr = {}
         self.symbol_dict = {}
         self.precision = 10
 
@@ -80,12 +80,12 @@ class Device(yaml.YAMLObject):
 
     def add_to_device_expr(self, label: str, value):
         """Add expression to an output to a device"""
-        self.to_device_expr.update({label: value})
+        self.output_devices_expr.update({label: value})
         log.debug(f"Added Expression: push to {label} amount of {value} fluid")
 
     def add_from_device_expr(self, label: str, value):
         """Add expression to an input from a device"""
-        self.from_device_expr.update({label: value})
+        self.input_devices_expr.update({label: value})
         log.debug(f"Added Expression: pull from {label} amount of {value} fluid")
 
     def reset_current_flow_rate(self):
@@ -147,11 +147,11 @@ class Device(yaml.YAMLObject):
         else:
             self.symbol_dict['current_flow_rate'] = self.current_flow_rate
             if self.math_parser == Allowed_math_type.sympy.value:
-                for devices_label, expr in self.to_device_expr.items():
+                for devices_label, expr in self.output_devices_expr.items():
                     self.symbol_dict[devices_label] \
                         .input(fluid, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
             elif self.math_parser == Allowed_math_type.wolfram.value:
-                for devices_label, expr in self.to_device_expr.items():
+                for devices_label, expr in self.output_devices_expr.items():
                     self.symbol_dict[devices_label] \
                         .input(fluid, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
@@ -167,11 +167,11 @@ class Device(yaml.YAMLObject):
         else:
             self.symbol_dict['requested_volume'] = volume
             if self.math_parser == Allowed_math_type.sympy.value:
-                for devices_label, expr in self.from_device_expr.items():
+                for devices_label, expr in self.input_devices_expr.items():
                     self.symbol_dict[devices_label] \
                         .output(self, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
             elif self.math_parser == Allowed_math_type.wolfram.value:
-                for devices_label, expr in self.from_device_expr.items():
+                for devices_label, expr in self.input_devices_expr.items():
                     self.symbol_dict[devices_label] \
                         .output(self, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
@@ -285,30 +285,46 @@ class Tank(Device):
     yaml_tag = u'!tank'
     yaml_loader = yaml.CLoader
 
-    def __init__(self, volume=0, device_type='tank', **kwargs):
+    def __init__(self, volume=0, max_volume=float('inf'), device_type='tank', **kwargs):
         self.volume = volume
+        self.max_volume = max_volume
         super(Tank, self).__init__(device_type=device_type, **kwargs)
 
     def __increase_volume(self, volume):
         """Raise the tank's volume by `volume`"""
-        self.volume += volume
+        self.volume += self.__check_increase_volume(volume)
         return volume
 
     def __decrease_volume(self, volume):
         """Lower the tank's volume by `volume`
         If it cannot decrease the requested volume, self.volume doesn't change"""
-        self.volume -= self.__check_volume(volume)
+        self.volume -= self.__check_decrease_volume(volume)
         return volume
 
-    def __check_volume(self, volume):
+    def __check_increase_volume(self, volume):
+        """See if the tank has enough space to store the received `volume` amount
+        """
+        if self.volume == self.max_volume:
+            volume = 0
+            log.warning(f"{self} full")
+        elif self.volume + volume < self.max_volume:
+            volume = volume
+        else:
+            volume = self.max_volume - self.volume
+            log.warning(f"{self} max volume reached")
+        return volume
+
+    def __check_decrease_volume(self, volume):
         """See if the tank has enough volume to provide the requested `volume` amount
         """
         if self.volume <= 0:
             volume = 0
+            log.warning(f"{self} empty")
         elif self.volume > volume:
             volume = volume
         else:
             volume = self.volume
+            log.warning(f"{self} empty")
         return volume
 
     def __update_fluid(self, new_context):
@@ -327,7 +343,7 @@ class Tank(Device):
             This verifies that the connected device accepts the amount of volume before
             we decrease our volume. e.g. full tank.
         """
-        accepted_volume = to_device.input(self.fluid, self.__check_volume(volume))
+        accepted_volume = to_device.input(self.fluid, self.__check_decrease_volume(volume))
         self.__decrease_volume(accepted_volume)
         self.current_flow_rate -= volume
         return accepted_volume
@@ -349,3 +365,47 @@ class Reservoir(Tank):
         """Make sure that we don't run dry.
         """
         self.volume += self.input_per_cycle
+
+
+class Vessel(Tank):
+    yaml_tag = u'!vessel'
+    yaml_loader = yaml.CLoader
+
+    def __init__(self, **kwargs):
+        super(Vessel, self).__init__(device_type='vessel', **kwargs)
+
+    def __increase_volume(self, volume):
+        """Raise the tank's volume by `volume`"""
+        self.volume += self.__check_increase_volume(volume)
+        return volume
+
+    def __check_increase_volume(self, volume):
+        """See if the tank has enough space to store the received `volume` amount
+        """
+        if self.volume + volume <= self.max_volume:
+            volume = 0
+        else:
+            # give the excess of fluid
+            volume = volume - (self.max_volume - self.volume)
+        return volume
+
+    def input(self, fluid, volume=1):
+        """Receive `volume` amount of `fluid`"""
+        self.__update_fluid(fluid)
+        exceed_volume = self.__increase_volume(volume)
+        self.current_flow_rate += volume
+        self.input_fluid(fluid, exceed_volume)
+        return exceed_volume
+
+    # Tank output to only one device
+    def output(self, to_device, volume=1):
+        """Send `volume` amount of fluid to connected device
+            This verifies that the connected device accepts the amount of volume before
+            we decrease our volume. e.g. full tank.
+        """
+        self.output_fluid(volume)
+        return volume
+
+    def worker(self):
+        """For debugging only. Used to display the tank's volume"""
+        pass

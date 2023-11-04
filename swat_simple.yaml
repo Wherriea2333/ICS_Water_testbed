@@ -107,7 +107,7 @@ devices:
   - !pump
     label: P-601
     volume_per_cycle: 10
-    state: 'off'
+    state: 'on'
 #  - !pump
 #    label: P-602
 #    volume_per_cycle: 10
@@ -115,7 +115,7 @@ devices:
   - !pump
     label: P-603
     volume_per_cycle: 10
-    state: 'off'
+    state: 'on'
 
 
 connections:
