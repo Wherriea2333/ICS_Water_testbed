@@ -29,7 +29,7 @@ class InvalidDevice(Exception):
 
 # Devices
 class Device(yaml.YAMLObject):
-    allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'chlorinator']
+    allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'vessel']
 
     def __init__(self, device_type=None, fluid=None, label='', state=None):
         self.uid = str(uuid.uuid4())[:8]
@@ -371,29 +371,20 @@ class Vessel(Tank):
     yaml_tag = u'!vessel'
     yaml_loader = yaml.CLoader
 
-    def __init__(self, **kwargs):
-        super(Vessel, self).__init__(device_type='vessel', **kwargs)
+    def __init__(self, device_type='vessel', **kwargs):
+        # self.max_volume = max_volume
+        super(Vessel, self).__init__(device_type=device_type, **kwargs)
 
-    def __increase_volume(self, volume):
+    def increase_volume(self, volume):
         """Raise the tank's volume by `volume`"""
-        self.volume += self.__check_increase_volume(volume)
-        return volume
-
-    def __check_increase_volume(self, volume):
-        """See if the tank has enough space to store the received `volume` amount
-        """
-        if self.volume + volume <= self.max_volume:
-            volume = 0
-        else:
-            # give the excess of fluid
-            volume = volume - (self.max_volume - self.volume)
-        return volume
+        exceed = max(self.volume + volume - self.max_volume, 0)
+        self.volume = min(self.max_volume, self.volume + volume)
+        return exceed
 
     def input(self, fluid, volume=1):
         """Receive `volume` amount of `fluid`"""
-        self.__update_fluid(fluid)
-        exceed_volume = self.__increase_volume(volume)
-        self.current_flow_rate += volume
+        exceed_volume = self.increase_volume(volume)
+        self.current_flow_rate += exceed_volume
         self.input_fluid(fluid, exceed_volume)
         return exceed_volume
 

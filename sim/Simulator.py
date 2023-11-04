@@ -26,6 +26,8 @@ def check_reservoir_volume(devices: {}, last_volume):
         if isinstance(device, Reservoir):
             current_volume -= device.input_per_cycle
     if current_volume != last_volume:
+        log.debug(f"Current volume: {current_volume}")
+        log.debug(f"Last volume: {last_volume}")
         log.warning(f"Input to tank not equal to output !")
     return current_volume
 
@@ -83,7 +85,7 @@ class Simulator(object):
             for device in self.devices.values():
                 device.worker()
             # check all reservoir
-            check_reservoir_volume(self.devices, self.current_tanks_volume)
+            self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume)
             for sensor in self.sensors.values():
                 sensor.worker()
                 log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")

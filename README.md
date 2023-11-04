@@ -65,7 +65,7 @@ connections:
     outputs:
       - pump1
       - pump2
-    from_device_expr:
+    output_devices_expr:
       pump1: 2 * pump1.volume_per_cycle / 3 + x
       pump2: 2 * pump2.volume_per_cycle / 3 + x
   pump1:

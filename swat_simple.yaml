@@ -68,13 +68,25 @@ devices:
     label: P-502
     volume_per_cycle: 10
     state: 'on'
-  # RO vessels
-  - !filter
+# RO vessels
+#  - !filter
+#    label: RO-501
+#  - !filter
+#    label: RO-502
+#  - !filter
+#    label: RO-503
+  - !vessel
     label: RO-501
-  - !filter
+    volume: 0
+    max_volume: 40
+  - !vessel
     label: RO-502
-  - !filter
+    volume: 0
+    max_volume: 40
+  - !vessel
     label: RO-503
+    volume: 0
+    max_volume: 40
   - !pump
     label: P-501
     volume_per_cycle: 10
@@ -232,3 +244,12 @@ sensors:
   - !volume
     label: reservoirsensor5
     connected_to: T-603
+  - !volume
+    label: vessel1
+    connected_to: RO-501
+  - !volume
+    label: vessel2
+    connected_to: RO-502
+  - !volume
+    label: vessel3
+    connected_to: RO-503
