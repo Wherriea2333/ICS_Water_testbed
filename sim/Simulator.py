@@ -18,14 +18,14 @@ def foo():
     sensor = Sensor()
 
 
-def check_reservoir_volume(devices: {}, last_volume):
+def check_reservoir_volume(devices: {}, last_volume: float, precision: int):
     current_volume = 0
     for device in devices.values():
         if isinstance(device, Tank):
             current_volume += device.volume
         if isinstance(device, Reservoir):
-            current_volume -= device.input_per_cycle
-    if current_volume != last_volume:
+            last_volume += device.input_per_cycle
+    if current_volume - last_volume > 1 ** - precision:
         log.debug(f"Current volume: {current_volume}")
         log.debug(f"Last volume: {last_volume}")
         log.warning(f"Input to tank not equal to output !")
@@ -78,14 +78,15 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.activate()
-        log.info(self.devices)
+        log.debug(self.devices)
         for i in range(self.max_cycle):
             for device in self.devices.values():
                 device.reset_current_flow_rate()
             for device in self.devices.values():
                 device.worker()
             # check all reservoir
-            self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume)
+            self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
+                                                               self.settings['precision'])
             for sensor in self.sensors.values():
                 sensor.worker()
                 log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")

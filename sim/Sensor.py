@@ -1,7 +1,11 @@
-from sim.Device import Device
 import logging
-import yaml
+from abc import abstractmethod
+
 import sympy.core.evalf as sp_evalf
+import yaml
+
+from sim.Device import Device
+
 log = logging.getLogger('phy_sim')
 
 
@@ -44,12 +48,14 @@ class Sensor(Device):
         """
         self.device_to_monitor = device
 
+    @abstractmethod
     def read_sensor(self):
         """ Report sensor value
              Override this to customize the data reported back to PLC
         """
         return self.fluid
 
+    @abstractmethod
     def write_sensor(self, value=None):
         """ Override this to do something to the device when PLC receives write commands
             E.g. open/close valve

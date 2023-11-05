@@ -13,12 +13,6 @@ from sim.utils import Allowed_math_type
 log = logging.getLogger('phy_sim')
 
 
-def equal_division_to_devices(volume: float, number_of_devices: int):
-    """Divide the volume equally among the devices
-    """
-    return volume / number_of_devices
-
-
 class InvalidDevice(Exception):
     """Exception thrown for bad device types
     """
@@ -143,16 +137,24 @@ class Device(yaml.YAMLObject):
                     open_device_number += 1
             for o in self.output_devices:
                 # Send the fluid on to all outputs equally
+                # log.debug(
+                #     f"Device {self} call input of output_device {self.output_devices[o]} with volume {volume / open_device_number}")
                 self.output_devices[o].input(fluid, volume / open_device_number)
         else:
             self.symbol_dict['current_flow_rate'] = self.current_flow_rate
-            self.symbol_dict['volume'] = volume
+            self.symbol_dict['current_volume'] = volume
+
             if self.math_parser == Allowed_math_type.sympy.value:
                 for devices_label, expr in self.output_devices_expr.items():
+                    # log.debug(f"Device {self} call input of output_device {self.symbol_dict[devices_label]} "
+                    #           f"with volume {sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision)}")
                     self.symbol_dict[devices_label] \
                         .input(fluid, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
+
             elif self.math_parser == Allowed_math_type.wolfram.value:
                 for devices_label, expr in self.output_devices_expr.items():
+                    # log.debug(f"Device {self} call input of output_device {self.symbol_dict[devices_label]} "
+                    #           f"with volume {sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision)}")
                     self.symbol_dict[devices_label] \
                         .input(fluid, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
@@ -164,15 +166,21 @@ class Device(yaml.YAMLObject):
                     open_device_number += 1
             for o in self.input_devices:
                 # Request the fluid from all inputs devices equally
+                # log.debug(
+                #     f"Device {self} call output of input device {self.input_devices[o]} with volume {volume / open_device_number}")
                 self.input_devices[o].output(self, sp_evalf.N(volume / open_device_number, self.precision))
         else:
             self.symbol_dict['requested_volume'] = volume
             if self.math_parser == Allowed_math_type.sympy.value:
                 for devices_label, expr in self.input_devices_expr.items():
+                    # log.debug(f"Device {self} call output of input device {self.symbol_dict[devices_label]} "
+                    #           f"with volume {sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision)}")
                     self.symbol_dict[devices_label] \
                         .output(self, sp_evalf.N(sp.parse_expr(expr, local_dict=self.symbol_dict), self.precision))
             elif self.math_parser == Allowed_math_type.wolfram.value:
                 for devices_label, expr in self.input_devices_expr.items():
+                    # log.debug(f"Device {self} call output of input device {self.symbol_dict[devices_label]} "
+                    #           f"with volume {sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision)}")
                     self.symbol_dict[devices_label] \
                         .output(self, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
