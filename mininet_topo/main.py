@@ -60,7 +60,7 @@ def fixNetworkManager(root, intf):
     root.cmd('service network-manager restart')
 
 
-def connectToInternet(network, switch='s1', rootip='10.0.0.5/8', subnet='10.0/8'):
+def connectToInternet(network, switch='s1', rootip='10.0.2.5/24', subnet='10.0.2.0/24'):
     """Connect the network to the internet
        switch: switch to connect to root namespace
        rootip: address for interface in root namespace
@@ -99,9 +99,9 @@ class MyTopology_test_network(IPTopo):
     def build(self, *args, **kwargs):
         s1 = self.addSwitch('s1')
 
-        h1 = self.addHost('h1', ip='10.0.0.1/8')
+        h1 = self.addHost('h1', ip='10.0.2.1/24')
 
-        h2 = self.addHost('h2', ip='10.0.0.2/8')
+        h2 = self.addHost('h2', ip='10.0.2.2/24')
 
         self.addLink(h1, s1)
         self.addLink(h2, s1)
