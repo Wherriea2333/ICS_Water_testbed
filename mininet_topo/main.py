@@ -60,7 +60,7 @@ def fixNetworkManager(root, intf):
     root.cmd('service network-manager restart')
 
 
-def connectToInternet(network, switch='s1', rootip='10.0.2.5/24', subnet='10.0.2.0/24'):
+def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='192.168.1.0/24'):
     """Connect the network to the internet
        switch: switch to connect to root namespace
        rootip: address for interface in root namespace
@@ -73,7 +73,7 @@ def connectToInternet(network, switch='s1', rootip='10.0.2.5/24', subnet='10.0.2
     root = Node('root', inNamespace=False)
 
     # Prevent network-manager from interfering with our interface
-    fixNetworkManager(root, 'root-eth0')
+    # fixNetworkManager(root, 'root-eth0')
 
     # Create link between root NS and switch
     link = network.addLink(root, switch)
@@ -83,7 +83,7 @@ def connectToInternet(network, switch='s1', rootip='10.0.2.5/24', subnet='10.0.2
     network.start()
 
     # Start NAT and establish forwarding
-    startNAT(root, "enp0s3", subnet)
+    startNAT(root, "enp0s8", subnet)
 
     # Establish routes from end hosts
     for host in network.hosts:
@@ -99,9 +99,9 @@ class MyTopology_test_network(IPTopo):
     def build(self, *args, **kwargs):
         s1 = self.addSwitch('s1')
 
-        h1 = self.addHost('h1', ip='10.0.2.1/24')
+        h1 = self.addHost('h1', ip='192.168.1.2/24')
 
-        h2 = self.addHost('h2', ip='10.0.2.2/24')
+        h2 = self.addHost('h2', ip='192.168.1.3/24')
 
         self.addLink(h1, s1)
         self.addLink(h2, s1)
