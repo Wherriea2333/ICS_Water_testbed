@@ -3,8 +3,12 @@ from ipmininet.ipnet import IPNet
 from ipmininet.iptopo import IPTopo
 from mininet.node import Node
 
-
 #################################
+
+redis = 'redis'
+simulation = "simulation"
+
+
 def startNAT(root, inetIntf, subnet):
     """Start NAT/forwarding between Mininet and external network
     root: node to access iptables from
@@ -87,12 +91,44 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
 
     # Establish routes from end hosts
     for host in network.hosts:
-        print("GOES INTO THE HOSTS")
         host.cmd('ip route flush root 0/0')
         host.cmd('route add -net', subnet, 'dev', host.defaultIntf())
         host.cmd('route add default gw', rootip.split('/')[0])
 
+    # establish dns on PLC hosts
+    for host in network.hosts:
+        if host == redis:
+            install_redis(host)
+        elif host == simulation:
+            # copy the folder with all physics into the host,
+            # install all dependencies
+            # then run the simulation
+            pass
+        else:
+            add_dns_to_hosts(host)
+            install_open_plc(host)
+
     return root
+
+
+def add_dns_to_hosts(host):
+    if host != redis:
+        host.cmd('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
+
+
+def install_redis(host):
+    host.cmd("sudo apt-get install redis")
+    # host.cmd("sudo apt install redis-tools")
+
+
+def install_open_plc(host):
+    host.cmd("mkdir" + str(host))
+    host.cmd("cd " + str(host))
+    host.cmd("git clone https://github.com/thiagoralves/OpenPLC_v3.git")
+    host.cmd("cd OpenPLC_v3")
+    host.cmd("./install.sh linux")
+    host.cmd("./start_openplc.sh &")
+    host.cmd("/")
 
 
 class MyTopology_test_network(IPTopo):
@@ -103,8 +139,14 @@ class MyTopology_test_network(IPTopo):
 
         h2 = self.addHost('h2', ip='192.168.1.3/24')
 
+        h3 = self.addHost(simulation, ip='192.168.1.11')
+
+        redis_host = self.addHost(redis, ip='192.168.1.10/24')
+
         self.addLink(h1, s1)
         self.addLink(h2, s1)
+        self.addLink(redis_host, s1)
+        self.addLink(h3, s1)
 
         super().build(*args, **kwargs)
 
