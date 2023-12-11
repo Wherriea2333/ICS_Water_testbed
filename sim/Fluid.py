@@ -20,9 +20,11 @@ class Fluid(yaml.YAMLObject):
     """
     allowed_fluid_types = ['water', 'chlorine']
 
-    def __init__(self, fluid_type=None, ph=None, temperature=None, salinity=None, pressure=None, flow_rate=None):
+    def __init__(self, fluid_type=None, volume=None, ph=None, temperature=None, salinity=None, pressure=None,
+                 flow_rate=None):
         self.uid = str(uuid.uuid4())[:8]
         self.fluid_type = fluid_type
+        self.volume = volume
         self.ph = ph  # For later use
         self.temperature = temperature  # For later use
         self.salinity = salinity  # For later use
@@ -31,6 +33,16 @@ class Fluid(yaml.YAMLObject):
 
         if (not fluid_type) or (fluid_type not in self.allowed_fluid_types):
             raise InvalidFluid(f"'{flow_rate}' in not a valid fluid type")
+
+    def add_volume(self, volume):
+        self.volume += volume
+
+    def decrease_volume(self, volume):
+        if self.volume < volume:
+            self.volume = 0
+            log.warning("Not enough left volume to send")
+        else:
+            self.volume -= volume
 
     def __repr__(self):
         return f"{self.uid} {self.fluid_type} " \

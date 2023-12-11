@@ -1,6 +1,7 @@
 import logging
 import uuid
 from abc import abstractmethod
+from copy import deepcopy
 
 import sympy.core.evalf as sp_evalf
 import sympy.parsing.mathematica as mp
@@ -20,18 +21,18 @@ class InvalidDevice(Exception):
     def __init__(self, message):
         super(InvalidDevice, self).__init__(message)
 
-
+# TODO: remove volume from input as the volume is in fluid
 # Devices
 class Device(yaml.YAMLObject):
     allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'vessel']
 
-    def __init__(self, device_type=None, fluid=None, label='', state=None):
+    def __init__(self, device_type=None, fluids=None, label='', state=None):
         self.uid = str(uuid.uuid4())[:8]
         self.device_type = device_type
         self.label = label
         self.input_devices = {}
         self.output_devices = {}
-        self.fluid = fluid
+        self.fluids = []
         self.current_flow_rate = 0
         self.active = False
         self.state = state
@@ -43,6 +44,8 @@ class Device(yaml.YAMLObject):
 
         if (not self.device_type) or (self.device_type not in self.allowed_device_types):
             raise InvalidDevice(f"{self.device_type} in not a valid device type")
+        if fluids is not None:
+            self.fluids.extend(fluids)
 
         log.info(f"{self}: Initialized")
 
@@ -117,15 +120,15 @@ class Device(yaml.YAMLObject):
 
     @abstractmethod
     def input(self, fluid: Fluid, volume: float):
-        """Receive and process some fluid
-            Override this with your own processing to perform when new fluid is received
+        """Receive and process some fluids
+            Override this with your own processing to perform when new fluids is received
         """
         return 0
 
     @abstractmethod
     def output(self, to_device, volume: float):
-        """Receive and process some fluid
-            Override this with your own processing to perform when fluid is outputted
+        """Receive and process some fluids
+            Override this with your own processing to perform when fluids is outputted
         """
         return 0
 
@@ -203,12 +206,15 @@ class Pump(Device):
         if self.state:
             self.output_fluid(self.volume_per_cycle)
 
-    def input(self, fluid, volume=1):
+    def input(self, input_fluid, volume=1):
         """Receive the fluid, add it to output devices equally"""
         if self.state:
-            self.fluid = fluid
+            for fluid in self.fluids:
+                if fluid.fluid_type == input_fluid.fluid_type:
+                    fluid.add_volume(input_fluid.volume)
+                    break
             self.current_flow_rate += volume
-            self.input_fluid(fluid, volume)
+            self.input_fluid(input_fluid, volume)
             return volume
         else:
             return 0
@@ -219,7 +225,8 @@ class Pump(Device):
             if self.current_flow_rate + volume >= self.volume_per_cycle:
                 log.warning(f"EXCEED {self} volume_per_cycle")
             self.output_fluid(volume)
-            return self.fluid
+            # TODO: investigate if the return is actually needed...
+            return self.fluids[0]
         else:
             return 0
 
@@ -337,7 +344,11 @@ class Tank(Device):
         return volume
 
     def __update_fluid(self, new_context):
-        self.fluid = new_context
+        # TODO: make custom update of fluid
+        for fluid in self.fluids:
+            if fluid.fluid_type == new_context.fluid_type:
+                fluid.add_volume(new_context.volume)
+                break
 
     def input(self, fluid, volume=1):
         """Receive `volume` amount of `fluid`"""
@@ -352,10 +363,20 @@ class Tank(Device):
             This verifies that the connected device accepts the amount of volume before
             we decrease our volume. e.g. full tank.
         """
-        accepted_volume = to_device.input(self.fluid, self.__check_decrease_volume(volume))
-        self.__decrease_volume(accepted_volume)
-        self.current_flow_rate -= volume
-        return accepted_volume
+        sum_accepted_volume = 0
+        total_volume_to_send = self.__check_decrease_volume(volume)
+        for fluid in self.fluids:
+            fluid_to_send = deepcopy(fluid)
+            # TODO: make an expr for the user to change if needed
+            fluid_volume_to_send = total_volume_to_send * (fluid.volume / self.volume)
+            fluid_to_send.volume = fluid_volume_to_send
+            fluid.decrease_volume(fluid_volume_to_send)
+            # send the fluid
+            accepted_volume = to_device.input(fluid_to_send, fluid_volume_to_send)
+            self.__decrease_volume(accepted_volume)
+            self.current_flow_rate -= accepted_volume
+            sum_accepted_volume += accepted_volume
+        return sum_accepted_volume
 
     def worker(self):
         """For debugging only. Used to display the tank's volume"""
@@ -392,6 +413,7 @@ class Vessel(Tank):
 
     def input(self, fluid, volume=1):
         """Receive `volume` amount of `fluid`"""
+        self.__update_fluid(fluid)
         exceed_volume = self.increase_volume(volume)
         self.current_flow_rate += exceed_volume
         self.input_fluid(fluid, exceed_volume)
