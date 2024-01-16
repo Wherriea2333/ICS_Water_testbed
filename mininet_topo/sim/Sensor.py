@@ -4,7 +4,7 @@ from abc import abstractmethod
 import sympy.core.evalf as sp_evalf
 import yaml
 
-from sim.Device import Device
+from mininet_topo.sim.Device import Device
 
 log = logging.getLogger('phy_sim')
 

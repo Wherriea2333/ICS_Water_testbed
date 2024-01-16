@@ -5,8 +5,8 @@ from mininet.node import Node
 
 #################################
 
-redis = 'redis'
-simulation = "simulation"
+REDIS = 'redis'
+SIMULATION = "simulation"
 
 
 def startNAT(root, inetIntf, subnet):
@@ -97,29 +97,52 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
 
     # establish dns on PLC hosts
     for host in network.hosts:
-        if host == redis:
+        # create a folder for each host
+        host.cmd(f"mkdir -p {host}")
+        add_dns_to_hosts(host)
+        if host == REDIS:
             install_redis(host)
-        elif host == simulation:
-            # copy the folder with all physics into the host,
-            # install all dependencies
-            # then run the simulation
-            pass
+            # launch the redis server
+            # host.cmd("redis-server -redis.conf")
+        elif host == SIMULATION:
+            # copy the folder with all physics into the host
+            copy_physic_simulation(host)
+            install_redis_tools(host)
         else:
-            add_dns_to_hosts(host)
+            install_redis_tools(host)
             install_open_plc(host)
-
     return root
 
 
 def add_dns_to_hosts(host):
-    if host != redis:
-        host.cmd('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
+    host.cmd('echo nameserver 8.8.8.8 > /etc/resolv.conf')
 
 
 def install_redis(host):
-    host.cmd("sudo apt-get install redis")
-    # host.cmd("sudo apt install redis-tools")
+    # host.cmd("sudo snap install redis")
+    host.cmd("wget https://download.redis.io/redis-stable.tar.gz")
+    host.cmd("tar -xzvf redis-stable.tar.gz")
+    host.cmd("cd redis-stable && make")
+    host.cmd("sudo make install")
+    host.cmd("cd ..")
 
+
+def copy_physic_simulation(host):
+    host.cmd(f"cp -r sim {host}/sim")
+
+
+def install_redis_tools(host):
+    # sudo apt-get install redis-tools
+    host.cmd("sudo apt install redis-tools")
+
+
+# redis server auth required password
+# check redis
+# redis-cli ping
+# systemctl status redis
+# connection to redis
+# redis-cli -a "password" PING
+# redis-cli -h "host-address" -p 6379 PING
 
 def install_open_plc(host):
     host.cmd("mkdir" + str(host))
@@ -128,7 +151,8 @@ def install_open_plc(host):
     host.cmd("cd OpenPLC_v3")
     host.cmd("./install.sh linux")
     host.cmd("./start_openplc.sh &")
-    host.cmd("/")
+    host.cmd("cd ..")
+    host.cmd("cd ..")
 
 
 class MyTopology_test_network(IPTopo):
@@ -139,14 +163,14 @@ class MyTopology_test_network(IPTopo):
 
         h2 = self.addHost('h2', ip='192.168.1.3/24')
 
-        h3 = self.addHost(simulation, ip='192.168.1.11')
+        sym = self.addHost(SIMULATION, ip='192.168.1.11')
 
-        redis_host = self.addHost(redis, ip='192.168.1.10/24')
+        redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         self.addLink(h1, s1)
         self.addLink(h2, s1)
-        self.addLink(redis_host, s1)
-        self.addLink(h3, s1)
+        self.addLink(redis, s1)
+        self.addLink(sym, s1)
 
         super().build(*args, **kwargs)
 

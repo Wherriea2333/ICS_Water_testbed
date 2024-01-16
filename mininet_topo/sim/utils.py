@@ -1,7 +1,7 @@
 from enum import Enum
 
 from yaml import CLoader
-from sim.Device import *
+from mininet_topo.sim.Device import *
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')

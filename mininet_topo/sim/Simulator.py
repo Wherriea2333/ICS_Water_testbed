@@ -1,10 +1,11 @@
 import signal
 import sys
 
-from sim.Device import *
-from sim.Fluid import *
-from sim.Sensor import *
-from sim.utils import parse_yml, build_simulation
+from mininet_topo.sim.Device import *
+from mininet_topo.sim.Fluid import *
+from mininet_topo.sim.Sensor import *
+from mininet_topo.sim.utils import parse_yml, build_simulation
+import redis
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')
@@ -72,6 +73,14 @@ class Simulator(object):
         self.set_current_tanks_volume()
 
     def start(self):
+        # adjust redis host to the right address
+        r = redis.Redis(host="192.168.1.10", port=6379, decode_responses=True, socket_timeout=10, retry_on_timeout=True)
+        try:
+            r.ping()
+            log.info("Connected to redis server")
+        except redis.ConnectionError:
+            log.error("Cannot connect to redis server")
+
         """Start the simulation"""
         for device in self.devices.values():
             device.activate()
@@ -90,6 +99,9 @@ class Simulator(object):
             for sensor in self.sensors.values():
                 sensor.worker()
                 log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
+                r.set(sensor.device_to_monitor.label, sensor.read_sensor())
+            # read data from the redis server for each PLC
+            # apply it to make the change according to the value read from redis
 
         # for plc in self.plcs:
         #     for sensor in self.plcs[plc]['sensors']:

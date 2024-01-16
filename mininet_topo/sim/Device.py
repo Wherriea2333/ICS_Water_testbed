@@ -7,8 +7,8 @@ import sympy.parsing.mathematica as mp
 import sympy.parsing.sympy_parser as sp
 import yaml
 
-from sim.Fluid import Fluid
-from sim.utils import Allowed_math_type
+from mininet_topo.sim.Fluid import Fluid
+from mininet_topo.sim.utils import Allowed_math_type
 
 log = logging.getLogger('phy_sim')
 
