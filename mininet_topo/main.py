@@ -161,14 +161,14 @@ class MyTopology_test_network(IPTopo):
 
         h1 = self.addHost('h1', ip='192.168.1.2/24')
 
-        h2 = self.addHost('h2', ip='192.168.1.3/24')
+        # h2 = self.addHost('h2', ip='192.168.1.3/24')
 
         sym = self.addHost(SIMULATION, ip='192.168.1.11')
 
         redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         self.addLink(h1, s1)
-        self.addLink(h2, s1)
+        # self.addLink(h2, s1)
         self.addLink(redis, s1)
         self.addLink(sym, s1)
 
