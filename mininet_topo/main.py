@@ -100,11 +100,11 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
         # create a folder for each host
         host.cmd(f"mkdir -p {host}")
         add_dns_to_hosts(host)
-        if host == REDIS:
-            install_redis(host)
+        if host.name == REDIS:
+            install_redis_server(host)
             # launch the redis server
-            # host.cmd("redis-server -redis.conf")
-        elif host == SIMULATION:
+            # host.cmd("redis-server ./redis.conf")
+        elif host.name == SIMULATION:
             # copy the folder with all physics into the host
             copy_physic_simulation(host)
             install_redis_tools(host)
@@ -118,12 +118,14 @@ def add_dns_to_hosts(host):
     host.cmd('echo nameserver 8.8.8.8 > /etc/resolv.conf')
 
 
-def install_redis(host):
+def install_redis_server(host):
     # host.cmd("sudo snap install redis")
+    host.cmd(f"cd {host}")
     host.cmd("wget https://download.redis.io/redis-stable.tar.gz")
     host.cmd("tar -xzvf redis-stable.tar.gz")
     host.cmd("cd redis-stable && make")
     host.cmd("sudo make install")
+    host.cmd("cd ..")
     host.cmd("cd ..")
 
 
@@ -133,7 +135,9 @@ def copy_physic_simulation(host):
 
 def install_redis_tools(host):
     # sudo apt-get install redis-tools
+    host.cmd(f"cd {host}")
     host.cmd("sudo apt install redis-tools")
+    host.cmd("cd ..")
 
 
 # redis server auth required password
@@ -145,8 +149,7 @@ def install_redis_tools(host):
 # redis-cli -h "host-address" -p 6379 PING
 
 def install_open_plc(host):
-    host.cmd("mkdir" + str(host))
-    host.cmd("cd " + str(host))
+    host.cmd(f"cd {host}")
     host.cmd("git clone https://github.com/thiagoralves/OpenPLC_v3.git")
     host.cmd("cd OpenPLC_v3")
     host.cmd("./install.sh linux")
