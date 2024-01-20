@@ -7,7 +7,8 @@ from mininet.node import Node
 
 REDIS = 'redis'
 SIMULATION = "simulation"
-
+OPENPLC_BASH = "install_openplc.sh"
+REDIS_SERVER_BASH = "install_redis_server.sh"
 
 def startNAT(root, inetIntf, subnet):
     """Start NAT/forwarding between Mininet and external network
@@ -98,7 +99,7 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
     # establish dns on PLC hosts
     for host in network.hosts:
         # create a folder for each host
-        host.cmd(f"mkdir -p {host}")
+        host.cmd(f"mkdir -p {host.name}")
         add_dns_to_hosts(host)
         if host.name == REDIS:
             install_redis_server(host)
@@ -119,13 +120,11 @@ def add_dns_to_hosts(host):
 
 
 def install_redis_server(host):
-    # host.cmd("sudo snap install redis")
-    host.cmd(f"cd {host}")
-    host.cmd("wget https://download.redis.io/redis-stable.tar.gz")
-    host.cmd("tar -xzvf redis-stable.tar.gz")
-    host.cmd("cd redis-stable && make")
-    host.cmd("sudo make install")
-    host.cmd("cd ..")
+    # copy redis install script to host dedicated folder
+    host.cmd(f"cp ./bash_utils/{REDIS_SERVER_BASH} ./{host.name}")
+    host.cmd(f"cd {host.name} || exit 1")
+    host.cmd(f"chmod +x ./{REDIS_SERVER_BASH}")
+    host.cmd(f"sudo ./{REDIS_SERVER_BASH}")
     host.cmd("cd ..")
 
 
@@ -135,7 +134,7 @@ def copy_physic_simulation(host):
 
 def install_redis_tools(host):
     # sudo apt-get install redis-tools
-    host.cmd(f"cd {host}")
+    host.cmd(f"cd {host.name} || exit 1")
     host.cmd("sudo apt install redis-tools")
     host.cmd("cd ..")
 
@@ -149,29 +148,25 @@ def install_redis_tools(host):
 # redis-cli -h "host-address" -p 6379 PING
 
 def install_open_plc(host):
-    host.cmd(f"cd {host}")
-    host.cmd("git clone https://github.com/thiagoralves/OpenPLC_v3.git")
-    host.cmd("cd OpenPLC_v3")
-    host.cmd("./install.sh linux")
-    host.cmd("./start_openplc.sh &")
-    host.cmd("cd ..")
+    # copy openplc install script to host dedicated folder
+    host.cmd(f"cp ./bash_utils/{OPENPLC_BASH} ./{host.name}")
+    host.cmd(f"cd {host.name} || exit 1")
+    host.cmd(f"chmod +x ./{OPENPLC_BASH}")
+    host.cmd(f"sudo ./{OPENPLC_BASH}")
     host.cmd("cd ..")
 
 
-class MyTopology_test_network(IPTopo):
+class Simplest_test_network(IPTopo):
     def build(self, *args, **kwargs):
         s1 = self.addSwitch('s1')
 
         h1 = self.addHost('h1', ip='192.168.1.2/24')
-
-        # h2 = self.addHost('h2', ip='192.168.1.3/24')
 
         sym = self.addHost(SIMULATION, ip='192.168.1.11')
 
         redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         self.addLink(h1, s1)
-        # self.addLink(h2, s1)
         self.addLink(redis, s1)
         self.addLink(sym, s1)
 
@@ -179,7 +174,7 @@ class MyTopology_test_network(IPTopo):
 
 
 if __name__ == '__main__':
-    net = IPNet(topo=MyTopology_test_network(), use_v6=False, allocate_IPs=False, waitConnected=True)
+    net = IPNet(topo=Simplest_test_network(), use_v6=False, allocate_IPs=False, waitConnected=True)
 
     rootnode = connectToInternet(net)
     #        net.start()
