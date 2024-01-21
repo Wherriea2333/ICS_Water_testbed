@@ -1,6 +1,6 @@
 import argparse
 
-from mininet_topo.sim.Simulator import Simulator
+from Simulator import Simulator
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build and run SCADA simulated environments')

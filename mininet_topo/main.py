@@ -162,13 +162,57 @@ class Simplest_test_network(IPTopo):
 
         h1 = self.addHost('h1', ip='192.168.1.2/24')
 
-        sym = self.addHost(SIMULATION, ip='192.168.1.11')
+        sym = self.addHost(SIMULATION, ip='192.168.1.11/24')
 
         redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         self.addLink(h1, s1)
         self.addLink(redis, s1)
         self.addLink(sym, s1)
+
+        super().build(*args, **kwargs)
+
+class star_topology(IPTopo):
+    def build(self, *args, **kwargs):
+        s1 = self.addSwitch('s1')
+        s2 = self.addSwitch('s2')
+        s3 = self.addSwitch('s3')
+        s4 = self.addSwitch('s4')
+        s5 = self.addSwitch('s5')
+        s6 = self.addSwitch('s6')
+        s7 = self.addSwitch('s7')
+        s8 = self.addSwitch('s8')
+
+        plc1 = self.addHost('plc1', ip='192.168.1.2/24')
+        plc2 = self.addHost('plc2', ip='192.168.1.3/24')
+        plc3 = self.addHost('plc3', ip='192.168.1.4/24')
+        plc4 = self.addHost('plc4', ip='192.168.1.5/24')
+        plc5 = self.addHost('plc5', ip='192.168.1.6/24')
+        plc6 = self.addHost('plc6', ip='192.168.1.7/24')
+
+        sym = self.addHost(SIMULATION, ip='192.168.1.11/24')
+
+        redis = self.addHost(REDIS, ip='192.168.1.10/24')
+
+        # TODO: change this scada system with a real one ...
+        scada = self.addHost("scada", ip='192.168.1.12/24')
+
+        # add link to each switch with its PLC
+        self.addLink(s1, s2)
+        self.addLink(s1, s3)
+        self.addLink(s1, s4)
+        self.addLink(s1, s5)
+        self.addLink(s1, s6)
+        self.addLink(s1, s7)
+        self.addLink(s2, plc1)
+        self.addLink(s3, plc2)
+        self.addLink(s4, plc3)
+        self.addLink(s5, plc4)
+        self.addLink(s6, plc5)
+        self.addLink(s7, plc6)
+
+        # add link s1 to scada system
+        self.addLink(s1, scada)
 
         super().build(*args, **kwargs)
 

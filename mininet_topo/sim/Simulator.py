@@ -74,7 +74,8 @@ class Simulator(object):
 
     def start(self):
         # adjust redis host to the right address
-        r = redis.Redis(host="192.168.1.10", port=6379, decode_responses=True, socket_timeout=10, retry_on_timeout=True)
+        r = redis.Redis(host="192.168.1.10", port=6379, password="testpassword",
+                        decode_responses=True, socket_timeout=10, retry_on_timeout=True)
         try:
             r.ping()
             log.info("Connected to redis server")

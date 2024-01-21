@@ -29,25 +29,11 @@ Install pip3
 
 7. `$ sudo pip install --upgrade git+https://github.com/cnp3/ipmininet.git@v1.1`, `sudo python -m ipmininet.install -af`
 
-## TODO: automatize it in the python install script
-8. add DNS on host to install openPLC
-
-`h1 echo "nameserver 8.8.8.8" > /etc/resolv.conf`
-
-9. install openPLC in hosts
-
-`git clone https://github.com/thiagoralves/OpenPLC_v3.git`
-
-`cd OpenPLC_v3`
-
-`./install.sh linux`
-
-
 create box (Should be in the VM directory)
 
 `vagrant package --base vagrant --output /box/vm.box`
 
-10. access mininet host from host
+8. access mininet host from host
 
 enable IP forwarding:
 
@@ -56,4 +42,5 @@ enable IP forwarding:
 Configure firewall(if necessary)
 
 `sudo iptables -I INPUT -i mn-0-eth0 -j ACCEPT`
+
 `sudo iptables -I OUTPUT -o mn-0-eth0 -j ACCEPT`
