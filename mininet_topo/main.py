@@ -5,10 +5,21 @@ from mininet.node import Node
 
 #################################
 
-REDIS = 'redis'
+# REDIS = 'redis'
+# REDIS_SERVER_BASH = "install_redis_server.sh"
+
+# redis server auth required password
+# check redis
+# redis-cli ping
+# systemctl status redis
+# connection to redis
+# redis-cli -a "password" PING
+# redis-cli -h "host-address" -p 6379 PING
+
+
 SIMULATION = "simulation"
 OPENPLC_BASH = "install_openplc.sh"
-REDIS_SERVER_BASH = "install_redis_server.sh"
+
 
 def startNAT(root, inetIntf, subnet):
     """Start NAT/forwarding between Mininet and external network
@@ -101,11 +112,13 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
         # create a folder for each host
         host.cmd(f"mkdir -p {host.name}")
         add_dns_to_hosts(host)
-        if host.name == REDIS:
-            install_redis_server(host)
-            # launch the redis server
-            # host.cmd("redis-server ./redis.conf")
-        elif host.name == SIMULATION:
+        """
+        # if host.name == REDIS:
+        #     install_redis_server(host)
+        #     launch the redis server
+        #     host.cmd("redis-server ./redis.conf")
+        """
+        if host.name == SIMULATION:
             # copy the folder with all physics into the host
             copy_physic_simulation(host)
             install_redis_tools(host)
@@ -119,6 +132,7 @@ def add_dns_to_hosts(host):
     host.cmd('echo nameserver 8.8.8.8 > /etc/resolv.conf')
 
 
+"""
 def install_redis_server(host):
     # copy redis install script to host dedicated folder
     host.cmd(f"cp ./bash_utils/{REDIS_SERVER_BASH} ./{host.name}")
@@ -126,6 +140,7 @@ def install_redis_server(host):
     host.cmd(f"chmod +x ./{REDIS_SERVER_BASH}")
     host.cmd(f"sudo ./{REDIS_SERVER_BASH}")
     host.cmd("cd ..")
+"""
 
 
 def copy_physic_simulation(host):
@@ -138,14 +153,6 @@ def install_redis_tools(host):
     host.cmd("sudo apt install redis-tools")
     host.cmd("cd ..")
 
-
-# redis server auth required password
-# check redis
-# redis-cli ping
-# systemctl status redis
-# connection to redis
-# redis-cli -a "password" PING
-# redis-cli -h "host-address" -p 6379 PING
 
 def install_open_plc(host):
     # copy openplc install script to host dedicated folder
@@ -164,24 +171,18 @@ class Simplest_test_network(IPTopo):
 
         sym = self.addHost(SIMULATION, ip='192.168.1.11/24')
 
-        redis = self.addHost(REDIS, ip='192.168.1.10/24')
+        # redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         self.addLink(h1, s1)
-        self.addLink(redis, s1)
+        # self.addLink(redis, s1)
         self.addLink(sym, s1)
 
         super().build(*args, **kwargs)
 
+
 class star_topology(IPTopo):
     def build(self, *args, **kwargs):
         s1 = self.addSwitch('s1')
-        s2 = self.addSwitch('s2')
-        s3 = self.addSwitch('s3')
-        s4 = self.addSwitch('s4')
-        s5 = self.addSwitch('s5')
-        s6 = self.addSwitch('s6')
-        s7 = self.addSwitch('s7')
-        s8 = self.addSwitch('s8')
 
         plc1 = self.addHost('plc1', ip='192.168.1.2/24')
         plc2 = self.addHost('plc2', ip='192.168.1.3/24')
@@ -190,30 +191,24 @@ class star_topology(IPTopo):
         plc5 = self.addHost('plc5', ip='192.168.1.6/24')
         plc6 = self.addHost('plc6', ip='192.168.1.7/24')
 
-        sym = self.addHost(SIMULATION, ip='192.168.1.11/24')
+        sim = self.addHost(SIMULATION, ip='192.168.1.11/24')
 
-        redis = self.addHost(REDIS, ip='192.168.1.10/24')
+        # redis = self.addHost(REDIS, ip='192.168.1.10/24')
 
         # TODO: change this scada system with a real one ...
         scada = self.addHost("scada", ip='192.168.1.12/24')
 
         # add link to each switch with its PLC
-        self.addLink(s1, s2)
-        self.addLink(s1, s3)
-        self.addLink(s1, s4)
-        self.addLink(s1, s5)
-        self.addLink(s1, s6)
-        self.addLink(s1, s7)
-        self.addLink(s2, plc1)
-        self.addLink(s3, plc2)
-        self.addLink(s4, plc3)
-        self.addLink(s5, plc4)
-        self.addLink(s6, plc5)
-        self.addLink(s7, plc6)
-
+        self.addLink(s1, plc1)
+        self.addLink(s1, plc2)
+        self.addLink(s1, plc3)
+        self.addLink(s1, plc4)
+        self.addLink(s1, plc5)
+        self.addLink(s1, plc6)
         # add link s1 to scada system
         self.addLink(s1, scada)
-
+        # add link to simulation
+        self.addLink(s1, sim)
         super().build(*args, **kwargs)
 
 

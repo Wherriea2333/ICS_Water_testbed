@@ -1,6 +1,7 @@
 from enum import Enum
 
 from yaml import CLoader
+
 from mininet_topo.sim.Device import *
 
 logging.basicConfig()
@@ -23,6 +24,7 @@ def build_simulation(config, math_parser):
     settings = config['settings']
     devices = {}
     sensors = {}
+    plcs = {}
 
     # Process devices
     for device in config['devices']:
@@ -67,11 +69,13 @@ def build_simulation(config, math_parser):
 
     # process sensors
     for sensor in config['sensors']:
-        device_to_monitor = devices[sensor.device_to_monitor]
+        device_to_monitor = devices[sensor.device_to_monitor_label]
         sensor.monitor_device(device_to_monitor)
         sensors[sensor.label] = sensor
 
-    return {'settings': settings, 'devices': devices, 'sensors': sensors}
+    for plc in config['PLCs']:
+        for sensor_label in plc.controlled_sensors_label:
+            plc.controlled_sensors[sensor_label] = sensors[sensor_label]
+        plcs[plc.label] = plc
 
-
-
+    return {'settings': settings, 'devices': devices, 'sensors': sensors, 'PLCs': plcs}

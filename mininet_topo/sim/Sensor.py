@@ -10,10 +10,11 @@ log = logging.getLogger('phy_sim')
 
 
 class Sensor(Device):
-    def __init__(self, worker_frequency=1, **kwargs):
+    def __init__(self, **kwargs):
         self.outputs = None
         self.inputs = None
         self.fluid = None
+        self.device_to_monitor_label = None
         self.device_to_monitor = None
         self.precision = 10
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
@@ -94,7 +95,8 @@ class StateSensor(Sensor):
     yaml_loader = yaml.CLoader
 
     def __init__(self, connected_to=None, **kwargs):
-        self.device_to_monitor = connected_to
+        self.device_to_monitor_label = connected_to
+        self.device_to_monitor = None
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def read_sensor(self):
@@ -115,7 +117,8 @@ class VolumeSensor(Sensor):
 
     def __init__(self, connected_to=None, **kwargs):
         self.volume = 0
-        self.device_to_monitor = connected_to
+        self.device_to_monitor_label = connected_to
+        self.device_to_monitor = None
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def worker(self):
@@ -127,3 +130,9 @@ class VolumeSensor(Sensor):
         """ Report sensor value
         """
         return sp_evalf.N(self.volume, self.precision)
+
+    def write_sensor(self, state=None):
+        """ set device state
+        """
+        if state is not None:
+            self.device_to_monitor.write_state(state)

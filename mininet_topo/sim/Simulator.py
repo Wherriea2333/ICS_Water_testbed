@@ -43,6 +43,7 @@ class Simulator(object):
         self.settings = None
         self.devices = None
         self.sensors = None
+        self.plcs = None
         self.math_parser = math_parser
         self.max_cycle = None
         self.current_tanks_volume = 0
@@ -65,7 +66,7 @@ class Simulator(object):
         self.settings = simulation['settings']
         self.devices = simulation['devices']
         self.sensors = simulation['sensors']
-        # self.plcs = simulation['plcs']
+        self.plcs = simulation['plcs']
 
         self.set_speed(self.settings['speed'])
         self.set_precision(self.settings['precision'])
@@ -74,6 +75,7 @@ class Simulator(object):
 
     def start(self):
         # adjust redis host to the right address
+        """
         r = redis.Redis(host="192.168.1.10", port=6379, password="testpassword",
                         decode_responses=True, socket_timeout=10, retry_on_timeout=True)
         try:
@@ -81,6 +83,7 @@ class Simulator(object):
             log.info("Connected to redis server")
         except redis.ConnectionError:
             log.error("Cannot connect to redis server")
+        """
 
         """Start the simulation"""
         for device in self.devices.values():
@@ -88,6 +91,8 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.activate()
+        for plc in self.plcs.values():
+            plc.connect_plc()
         log.debug(self.devices)
         for i in range(self.max_cycle):
             for device in self.devices.values():
@@ -100,7 +105,7 @@ class Simulator(object):
             for sensor in self.sensors.values():
                 sensor.worker()
                 log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
-                r.set(sensor.device_to_monitor.label, sensor.read_sensor())
+                # r.set(sensor.device_to_monitor.label, sensor.read_sensor())
             # read data from the redis server for each PLC
             # apply it to make the change according to the value read from redis
 

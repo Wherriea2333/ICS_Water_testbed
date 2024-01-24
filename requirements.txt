@@ -1,3 +1,4 @@
 pyyaml==6.0.1
 sympy==1.12
 redis==5.0.1
+pymodbus==3.6.3
