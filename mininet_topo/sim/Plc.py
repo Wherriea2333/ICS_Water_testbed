@@ -43,3 +43,11 @@ class PLC(yaml.YAMLObject):
         self.client.close()
         self.state = False
         log.info(f"PLC {self.label}: Disconnected")
+
+    def read_single_bit_from_coil(self, location, count):
+        rr = self.client.read_coils(location, count)
+        return rr.bits[count]
+
+    def read_single_register(self, location):
+        rr = self.client.read_holding_registers(location, 1)
+        return rr.registers[0]

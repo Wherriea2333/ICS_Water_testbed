@@ -91,9 +91,11 @@ class Simulator(object):
 
         for sensor in self.sensors.values():
             sensor.activate()
+
         for plc in self.plcs.values():
             plc.connect_plc()
         log.debug(self.devices)
+
         for i in range(self.max_cycle):
             for device in self.devices.values():
                 device.reset_current_flow_rate()

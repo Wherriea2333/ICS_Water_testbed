@@ -1,0 +1,27 @@
+PROGRAM RawWater
+  VAR
+    P101 AT %QX0.0 : BOOL;
+    P102 AT %QX0.1 : BOOL;
+    MV101 AT %QX0.2 : BOOL;
+    FIT101 AT %MD0 : REAL;
+    FIT201 AT %MD1 : REAL;
+  END_VAR
+  VAR CONSTANT
+    ContainerMaxVolume AT %QW0 : INT := 1000;
+  END_VAR
+  VAR
+    ContainerCurrentVolume AT %QW1 : INT;
+  END_VAR
+
+  P101 := TRUE;
+  MV101 := TRUE;
+END_PROGRAM
+
+
+CONFIGURATION Config0
+
+  RESOURCE Res0 ON PLC
+    TASK task0(INTERVAL := T#20ms,PRIORITY := 0);
+    PROGRAM instance0 WITH task0 : RawWater;
+  END_RESOURCE
+END_CONFIGURATION

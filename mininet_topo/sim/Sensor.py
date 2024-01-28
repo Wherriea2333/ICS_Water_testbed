@@ -4,40 +4,21 @@ from abc import abstractmethod
 import sympy.core.evalf as sp_evalf
 import yaml
 
-from mininet_topo.sim.Device import Device
-
 log = logging.getLogger('phy_sim')
 
 
-class Sensor(Device):
+class Sensor(yaml.YAMLObject):
     def __init__(self, **kwargs):
-        self.outputs = None
-        self.inputs = None
-        self.fluid = None
         self.device_to_monitor_label = None
         self.device_to_monitor = None
         self.precision = 10
+        self.location = None
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
-    def output(self, to_device, volume):
-        """Output used for pass-through sensors.
-            If a connected device requests output, pass it upstream to the next device
-        """
-        available_volume = 0
-        for i in self.inputs:
-            available_volume = self.inputs[i].output(self, volume=volume)
-        return available_volume
-
-    def input(self, fluid, volume):
-        """When fluid comes in, store the fluid context, and pass it downstream to all connected devices
-        """
-        self.fluid = fluid
-        accepted_volume = 0
-        for o in self.outputs:
-            # Send the fluid on to all outputs
-            # log.debug("%s sending fluid to %s" % (self, self.outputs[o]))
-            accepted_volume = self.outputs[o].input(fluid, volume)
-        return accepted_volume
+    @classmethod
+    def from_yaml(cls, loader, node):
+        fields = loader.construct_mapping(node, deep=False)
+        return cls(**fields)
 
     def worker(self):
         """Do something at `worker_frequency` rate
@@ -54,7 +35,7 @@ class Sensor(Device):
         """ Report sensor value
              Override this to customize the data reported back to PLC
         """
-        return self.fluid
+        pass
 
     @abstractmethod
     def write_sensor(self, value=None):
@@ -90,13 +71,37 @@ class Sensor(Device):
 #         return self.ph
 
 
+class FlowRateSensor(Sensor):
+    yaml_tag = u'!flowrate'
+    yaml_loader = yaml.CLoader
+
+    def __init__(self, connected_to=None, **kwargs):
+        self.device_to_monitor_label = connected_to
+        self.flowrate = 0
+        super(Sensor, self).__init__(device_type="sensor", **kwargs)
+
+    def worker(self):
+        """Get the volume of `device_to_monitor`
+        """
+        self.flowrate = sp_evalf.N(self.device_to_monitor.current_flow_rate, self.precision)
+
+    def read_sensor(self):
+        """ Report device current flow rate
+        """
+        return sp_evalf.N(self.flowrate, self.precision)
+
+    def write_sensor(self, state=None):
+        """ Empty function
+        """
+        return
+
+
 class StateSensor(Sensor):
     yaml_tag = u'!state'
     yaml_loader = yaml.CLoader
 
     def __init__(self, connected_to=None, **kwargs):
         self.device_to_monitor_label = connected_to
-        self.device_to_monitor = None
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def read_sensor(self):
@@ -118,7 +123,6 @@ class VolumeSensor(Sensor):
     def __init__(self, connected_to=None, **kwargs):
         self.volume = 0
         self.device_to_monitor_label = connected_to
-        self.device_to_monitor = None
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     def worker(self):
@@ -132,7 +136,6 @@ class VolumeSensor(Sensor):
         return sp_evalf.N(self.volume, self.precision)
 
     def write_sensor(self, state=None):
-        """ set device state
+        """ Empty function
         """
-        if state is not None:
-            self.device_to_monitor.write_state(state)
+        return

@@ -1,0 +1,30 @@
+PROGRAM PreTreatment
+  VAR
+    P201 AT %QX0.0 : BOOL;
+    P202 AT %QX0.1 : BOOL;
+    P203 AT %QX0.2 : BOOL;
+    P204 AT %QX0.3 : BOOL;
+    P205 AT %QX0.4 : BOOL;
+    P206 AT %QX0.5 : BOOL;
+    MV201 AT %QX0.6 : BOOL;
+    LS201 AT %QW0 : INT;
+    LS202 AT %QW1 : INT;
+  END_VAR
+
+  P201 := TRUE;
+  P202 := TRUE;
+  P203 := TRUE;
+  P204 := TRUE;
+  P205 := TRUE;
+  P206 := TRUE;
+  MV201 := TRUE;
+END_PROGRAM
+
+
+CONFIGURATION Config0
+
+  RESOURCE Res0 ON PLC
+    TASK task0(INTERVAL := T#20ms,PRIORITY := 0);
+    PROGRAM instance0 WITH task0 : PreTreatment;
+  END_RESOURCE
+END_CONFIGURATION

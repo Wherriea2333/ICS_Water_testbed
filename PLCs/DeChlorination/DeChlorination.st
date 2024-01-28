@@ -1,0 +1,21 @@
+PROGRAM DeChlonorination
+  VAR
+    P401 AT %QX0.0 : BOOL;
+    P402 AT %QX0.1 : BOOL;
+    LS401 AT %QW0 : INT;
+    LIT401 AT %QW1 : INT;
+    FIT401 AT %MD0 : REAL;
+  END_VAR
+
+  P401 := TRUE;
+  P402 := TRUE;
+END_PROGRAM
+
+
+CONFIGURATION Config0
+
+  RESOURCE Res0 ON PLC
+    TASK task0(INTERVAL := T#20ms,PRIORITY := 0);
+    PROGRAM instance0 WITH task0 : DeChlonorination;
+  END_RESOURCE
+END_CONFIGURATION

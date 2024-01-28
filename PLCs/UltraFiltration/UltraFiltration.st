@@ -1,0 +1,23 @@
+PROGRAM UltraFiltration
+  VAR
+    P301 AT %QX0.0 : BOOL;
+    P302 AT %QX0.1 : BOOL;
+    MV302 AT %QX0.2 : BOOL;
+    LIT301 AT %QW0 : INT;
+    FIT301 AT %MD0 : REAL;
+    FIT302 AT %MD1 : REAL;
+  END_VAR
+
+  P301 := TRUE;
+  P302 := TRUE;
+  MV302 := TRUE;
+END_PROGRAM
+
+
+CONFIGURATION Config0
+
+  RESOURCE Res0 ON PLC
+    TASK task0(INTERVAL := T#20ms,PRIORITY := 0);
+    PROGRAM instance0 WITH task0 : UltraFiltration;
+  END_RESOURCE
+END_CONFIGURATION

@@ -1,0 +1,224 @@
+settings:
+  speed: 1
+  precision: 5
+  max_cycle: 10
+
+devices:
+  - !reservoir
+    label: T-101
+    volume: 1000
+    fluid: !water {}
+    input_per_cycle: 0
+  - !pump
+    label: P-101
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-102
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-201
+    state: 'open'
+  - !reservoir
+    label: T-301
+    volume: 1000
+    fluid: !water {}
+  - !pump
+    label: P-301
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-302
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-302
+    state: 'open'
+  # UF Membrane as a filter
+  - !filter
+    label: UF-301
+  - !reservoir
+    label: T-401
+    volume: 1000
+    fluid: !water {}
+  - !pump
+    label: P-401
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-402
+    volume_per_cycle: 10
+    state: 'on'
+  # UV dechlorinator
+  - !filter
+    label: UV-401
+  - !filter
+    label: Filter-501
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'on'
+  - !vessel
+    label: RO-501
+    volume: 0
+    max_volume: 40
+  - !vessel
+    label: RO-502
+    volume: 0
+    max_volume: 40
+  - !vessel
+    label: RO-503
+    volume: 0
+    max_volume: 40
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-501
+    state: 'open'
+  - !valve
+    label: MV-502
+    state: 'closed'
+  - !reservoir
+    label: T-601
+    volume: 1000
+    fluid: !water {}
+  - !reservoir
+    label: T-603
+    volume: 1000
+    fluid: !water {}
+  - !pump
+    label: P-601
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-603
+    volume_per_cycle: 10
+    state: 'on'
+
+
+connections:
+  T-101:
+    outputs:
+      - P-101
+      - P-102
+  P-101:
+    outputs:
+      - MV-201
+  P-102:
+    outputs:
+      - MV-201
+  MV-201:
+    outputs:
+      - T-301
+  T-301:
+    outputs:
+      - P-301
+      - P-302
+  P-301:
+    outputs:
+      - UF-301
+  P-302:
+    outputs:
+      - UF-301
+  UF-301:
+    outputs:
+      - MV-302
+  MV-302:
+    outputs:
+      - T-401
+  T-401:
+    outputs:
+      - P-401
+      - P-402
+  P-401:
+    outputs:
+      - UV-401
+  P-402:
+    outputs:
+      - UV-401
+  UV-401:
+    outputs:
+      - Filter-501
+  Filter-501:
+    outputs:
+      - P-501
+      - P-502
+  P-501:
+    outputs:
+      - RO-501
+      - RO-502
+  P-502:
+    outputs:
+      - RO-501
+      - RO-502
+  RO-501:
+    outputs:
+      - MV-501
+      - RO-503
+  RO-502:
+    outputs:
+      - MV-501
+      - RO-503
+  RO-503:
+    outputs:
+      - MV-501
+      - MV-502
+  MV-501:
+    outputs:
+      - T-603
+      - T-601
+  MV-502:
+    outputs:
+      - P-501
+      - P-502
+  T-603:
+    outputs:
+      - P-603
+  P-603:
+    outputs:
+      - RO-501
+      - RO-502
+  T-601:
+    outputs:
+      - P-601
+  P-601:
+    outputs:
+      - T-101
+
+
+sensors:
+  - !volume
+    label: reservoirsensor1
+    connected_to: T-101
+  - !volume
+    label: reservoirsensor2
+    connected_to: T-301
+  - !volume
+    label: reservoirsensor3
+    connected_to: T-401
+  - !volume
+    label: reservoirsensor4
+    connected_to: T-601
+  - !volume
+    label: reservoirsensor5
+    connected_to: T-603
+  - !volume
+    label: vessel1
+    connected_to: RO-501
+  - !volume
+    label: vessel2
+    connected_to: RO-502
+  - !volume
+    label: vessel3
+    connected_to: RO-503

@@ -11,7 +11,7 @@ from mininet_topo.sim.Fluid import Fluid
 from mininet_topo.sim.utils import Allowed_math_type
 
 log = logging.getLogger('phy_sim')
-
+allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'vessel']
 
 class InvalidDevice(Exception):
     """Exception thrown for bad device types
@@ -23,7 +23,6 @@ class InvalidDevice(Exception):
 
 # Devices
 class Device(yaml.YAMLObject):
-    allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'sensor', 'vessel']
 
     def __init__(self, device_type=None, fluid=None, label='', state=None):
         self.uid = str(uuid.uuid4())[:8]
@@ -41,7 +40,7 @@ class Device(yaml.YAMLObject):
         self.symbol_dict = {}
         self.precision = 10
 
-        if (not self.device_type) or (self.device_type not in self.allowed_device_types):
+        if (not self.device_type) or (self.device_type not in allowed_device_types):
             raise InvalidDevice(f"{self.device_type} in not a valid device type")
 
         log.info(f"{self}: Initialized")
