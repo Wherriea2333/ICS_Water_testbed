@@ -198,27 +198,81 @@ connections:
 
 
 sensors:
+  - !state
+    label: P101
+    connected_to: P-101
+  - !state
+    label: P102
+    connected_to: P-102
+#  - !state
+#    label: MV101
+#    connected_to: MV-101
+#  - !flowrate
+#    label: FIT101
+#    connected_to: MV-101
+  - !flowrate
+    label: FIT201
+    connected_to: MV-201
+  - !state
+    label: MV201
+    connected_to: MV-201
+  - !state
+    label: P301
+    connected_to: P-301
+  - !state
+    label: P302
+    connected_to: P-302
+  - !state
+    label: MV302
+    connected_to: MV-302
   - !volume
-    label: reservoirsensor1
-    connected_to: T-101
-  - !volume
-    label: reservoirsensor2
+    label: LIT301
     connected_to: T-301
+  - !flowrate
+    label: FIT301
+    connected_to: UF-301
+  - !state
+    label: P401
+    connected_to: P-401
+  - !state
+    label: P402
+    connected_to: P-402
   - !volume
-    label: reservoirsensor3
+    label: LIT401
     connected_to: T-401
+  - !flowrate
+    label: FIT401
+    connected_to: UV-401
+  - !state
+    label: MV501
+    connected_to: MV-501
+  - !state
+    label: MV502
+    connected_to: MV-502
+  - !state
+    label: P501
+    connected_to: P501
+  - !state
+    label: P502
+    connected_to: P502
+  - !flowrate
+    label: FIT501
+    connected_to: Filter-501
+  - !flowrate
+    label: FIT502
+    connected_to: MV-501
+  - !flowrate
+    label: FIT503
+    connected_to: MV-503
+  - !state
+    label: P601
+    connected_to: P-601
+  - !state
+    label: P603
+    connected_to: P-603
   - !volume
-    label: reservoirsensor4
+    label: LS601
     connected_to: T-601
   - !volume
-    label: reservoirsensor5
+    label: LS603
     connected_to: T-603
-  - !volume
-    label: vessel1
-    connected_to: RO-501
-  - !volume
-    label: vessel2
-    connected_to: RO-502
-  - !volume
-    label: vessel3
-    connected_to: RO-503

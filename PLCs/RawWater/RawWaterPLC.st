@@ -13,8 +13,9 @@ PROGRAM RawWater
     ContainerCurrentVolume AT %QW1 : INT;
   END_VAR
 
-  P101 := TRUE;
-  MV101 := TRUE;
+  P101 := P101;
+  P102 := P102;
+  MV101 := MV101;
 END_PROGRAM
 
 

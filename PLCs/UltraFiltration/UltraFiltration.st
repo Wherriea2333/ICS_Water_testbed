@@ -8,9 +8,9 @@ PROGRAM UltraFiltration
     FIT302 AT %MD1 : REAL;
   END_VAR
 
-  P301 := TRUE;
-  P302 := TRUE;
-  MV302 := TRUE;
+  P301 := MV302;
+  P302 := P301;
+  MV302 := P302;
 END_PROGRAM
 
 

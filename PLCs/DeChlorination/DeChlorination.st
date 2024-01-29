@@ -7,8 +7,8 @@ PROGRAM DeChlonorination
     FIT401 AT %MD0 : REAL;
   END_VAR
 
-  P401 := TRUE;
-  P402 := TRUE;
+  P401 := P401;
+  P402 := P402;
 END_PROGRAM
 
 

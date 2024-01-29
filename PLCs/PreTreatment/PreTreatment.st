@@ -11,13 +11,13 @@ PROGRAM PreTreatment
     LS202 AT %QW1 : INT;
   END_VAR
 
-  P201 := TRUE;
-  P202 := TRUE;
-  P203 := TRUE;
-  P204 := TRUE;
-  P205 := TRUE;
-  P206 := TRUE;
-  MV201 := TRUE;
+  P201 := P201;
+  P202 := P202;
+  P203 := P203;
+  P204 := P204;
+  P205 := P205;
+  P206 := P206;
+  MV201 := MV201;
 END_PROGRAM
 
 

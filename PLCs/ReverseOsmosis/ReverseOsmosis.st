@@ -9,10 +9,10 @@ PROGRAM ReverseOsmosis
     FIT503 AT %MD2 : REAL;
   END_VAR
 
-  MV501 := TRUE;
-  MV502 := TRUE;
-  P501 := TRUE;
-  P502 := TRUE;
+  MV501 := MV501;
+  MV502 := MV502;
+  P501 := P501;
+  P502 := P502;
 END_PROGRAM
 
 

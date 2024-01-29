@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<project xmlns:ns1="http://www.plcopen.org/xml/tc6.xsd" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
+<project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2024-01-27T21:41:29"/>
-  <contentHeader name="Unnamed" modificationDateTime="2024-01-27T21:45:33">
+  <contentHeader name="Unnamed" modificationDateTime="2024-01-29T11:04:13">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -75,43 +75,43 @@
               </connectionPointOut>
             </leftPowerRail>
             <rightPowerRail localId="3" height="160" width="10">
-              <position x="410" y="180"/>
+              <position x="640" y="180"/>
               <connectionPointIn>
                 <relPosition x="0" y="20"/>
                 <connection refLocalId="4">
-                  <position x="410" y="200"/>
-                  <position x="330" y="200"/>
+                  <position x="640" y="200"/>
+                  <position x="521" y="200"/>
                 </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="60"/>
                 <connection refLocalId="5">
-                  <position x="410" y="240"/>
-                  <position x="330" y="240"/>
+                  <position x="640" y="240"/>
+                  <position x="521" y="240"/>
                 </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="100"/>
                 <connection refLocalId="6">
-                  <position x="410" y="280"/>
-                  <position x="330" y="280"/>
+                  <position x="640" y="280"/>
+                  <position x="521" y="280"/>
                 </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="140"/>
                 <connection refLocalId="7">
-                  <position x="410" y="320"/>
-                  <position x="330" y="320"/>
+                  <position x="640" y="320"/>
+                  <position x="521" y="320"/>
                 </connection>
               </connectionPointIn>
             </rightPowerRail>
             <coil localId="4" height="20" width="21" negated="false">
-              <position x="310" y="190"/>
+              <position x="500" y="190"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
-                <connection refLocalId="2">
-                  <position x="310" y="200"/>
-                  <position x="230" y="200"/>
+                <connection refLocalId="8">
+                  <position x="500" y="200"/>
+                  <position x="341" y="200"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -120,12 +120,12 @@
               <variable>MV501</variable>
             </coil>
             <coil localId="5" height="20" width="21" negated="false">
-              <position x="310" y="230"/>
+              <position x="500" y="230"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
-                <connection refLocalId="2">
-                  <position x="310" y="240"/>
-                  <position x="230" y="240"/>
+                <connection refLocalId="1">
+                  <position x="500" y="240"/>
+                  <position x="340" y="240"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -134,12 +134,12 @@
               <variable>MV502</variable>
             </coil>
             <coil localId="6" height="20" width="21" negated="false">
-              <position x="310" y="270"/>
+              <position x="500" y="270"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
-                <connection refLocalId="2">
-                  <position x="310" y="280"/>
-                  <position x="230" y="280"/>
+                <connection refLocalId="9">
+                  <position x="500" y="280"/>
+                  <position x="340" y="280"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -148,12 +148,12 @@
               <variable>P501</variable>
             </coil>
             <coil localId="7" height="20" width="21" negated="false">
-              <position x="310" y="310"/>
+              <position x="500" y="310"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
-                <connection refLocalId="2">
-                  <position x="310" y="320"/>
-                  <position x="230" y="320"/>
+                <connection refLocalId="10">
+                  <position x="500" y="320"/>
+                  <position x="340" y="320"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -161,6 +161,62 @@
               </connectionPointOut>
               <variable>P502</variable>
             </coil>
+            <contact localId="8" height="20" width="21" negated="false" executionOrderId="0">
+              <position x="320" y="190"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="2">
+                  <position x="320" y="200"/>
+                  <position x="230" y="200"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>MV501</variable>
+            </contact>
+            <contact localId="1" height="20" width="21" negated="false" executionOrderId="0">
+              <position x="320" y="230"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="2">
+                  <position x="320" y="240"/>
+                  <position x="230" y="240"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>MV502</variable>
+            </contact>
+            <contact localId="9" height="20" width="21" negated="false" executionOrderId="0">
+              <position x="320" y="270"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="2">
+                  <position x="320" y="280"/>
+                  <position x="230" y="280"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>P501</variable>
+            </contact>
+            <contact localId="10" height="20" width="21" negated="false" executionOrderId="0">
+              <position x="320" y="310"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="2">
+                  <position x="320" y="320"/>
+                  <position x="230" y="320"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>P502</variable>
+            </contact>
           </LD>
         </body>
       </pou>

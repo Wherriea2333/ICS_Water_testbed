@@ -6,8 +6,8 @@ PROGRAM ROProduct
     LS603 AT %QW1 : INT;
   END_VAR
 
-  P601 := TRUE;
-  P603 := TRUE;
+  P601 := P601;
+  P603 := P603;
 END_PROGRAM
 
 
