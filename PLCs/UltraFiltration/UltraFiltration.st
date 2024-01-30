@@ -3,14 +3,19 @@ PROGRAM UltraFiltration
     P301 AT %QX0.0 : BOOL;
     P302 AT %QX0.1 : BOOL;
     MV302 AT %QX0.2 : BOOL;
-    LIT301 AT %QW0 : INT;
+  END_VAR
+  VAR CONSTANT
+    ContainerMax AT %QW0 : INT := 1000;
+  END_VAR
+  VAR
+    LIT301 AT %QW1 : INT;
     FIT301 AT %MD0 : REAL;
     FIT302 AT %MD1 : REAL;
   END_VAR
 
-  P301 := MV302;
-  P302 := P301;
-  MV302 := P302;
+  P301 := P301;
+  P302 := P302;
+  MV302 := MV302;
 END_PROGRAM
 
 
