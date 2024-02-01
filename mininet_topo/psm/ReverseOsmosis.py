@@ -28,40 +28,36 @@ import psm
 import time
 
 # global variables
-P201 = "QX0.0"
-P202 = "QX0.1"
-P203 = "QX0.2"
-P204 = "QX0.3"
-P205 = "QX0.4"
-P206 = "QX0.5"
+MV501 = "QX0.0"
+MV502 = "QX0.1"
+P501 = "QX0.2"
+P502 = "QX0.3"
 
-MV201 = "QX0.6"
-LS201 = "QW0"
-LS202 = "QW1"
-
+FIT501 = "MD0"
+FIT502 = "MD1"
+FIT503 = "MD2"
 
 def hardware_init():
     # Insert your hardware initialization code in here
 
-    psm.set_var(P201, False)
-    psm.set_var(P202, False)
-    psm.set_var(P203, False)
-    psm.set_var(P204, False)
-    psm.set_var(P205, False)
-    psm.set_var(P206, False)
-    psm.set_var(MV201, True)
+    psm.set_var(MV501, True)
+    psm.set_var(MV502, False)
+    psm.set_var(P501, False)
+    psm.set_var(P502, False)
+
     psm.start()
 
 
 def update_inputs():
     # place here your code to update inputs
+    # if have to work, open P501,P502,MV501
+    # else do nothing
     pass
 
 
 def update_outputs():
     # place here your code to work on outputs
     pass
-
 
 if __name__ == "__main__":
     hardware_init()

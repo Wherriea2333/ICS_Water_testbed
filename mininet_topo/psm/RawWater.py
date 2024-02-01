@@ -34,7 +34,7 @@ MV101 = "QX0.2"
 FIT101 = "MD0"
 FIT201 = "MD1"
 ContainerMax = psm.get_var("QW0")
-ContainerCurrentVolume = "QW1"
+ContainerCurrentVolumeRegister = "QW1"
 
 
 def hardware_init():
@@ -54,11 +54,11 @@ def update_inputs():
     #     psm.set_var(P102, False)
 
     # min 20 %
-    if ContainerCurrentVolume <= 0.2 * ContainerMax:
+    if psm.get_var(ContainerCurrentVolumeRegister) <= 0.2 * ContainerMax:
         psm.set_var(P101, False)
         psm.set_var(P102, False)
     # max 80 %
-    if ContainerCurrentVolume >= 0.8 * ContainerMax:
+    if psm.get_var(ContainerCurrentVolumeRegister) >= 0.8 * ContainerMax:
         psm.set_var(MV101, False)
 
 
@@ -66,7 +66,7 @@ def update_outputs():
     # place here your code to work on outputs
     print(f" P101 is at {psm.get_var(P101)}")
     print(f" P102 is at {psm.get_var(P102)}")
-    print(f" ContainerCurrentVolume is {psm.get_var(ContainerCurrentVolume)}")
+    print(f" ContainerCurrentVolume is {psm.get_var(ContainerCurrentVolumeRegister)}")
 
 
 if __name__ == "__main__":

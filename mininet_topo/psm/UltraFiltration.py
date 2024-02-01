@@ -50,11 +50,11 @@ def hardware_init():
 def update_inputs():
     # place here your code to update inputs
     # min 20 %
-    if LIT301 <= 0.2 * ContainerMax:
+    if psm.get_var(LIT301) <= 0.2 * ContainerMax:
         psm.set_var(P301, False)
         psm.set_var(P302, False)
     # max 80 %
-    if LIT301 >= 0.8 * ContainerMax:
+    if psm.get_var(LIT301) >= 0.8 * ContainerMax:
         # find a way to output some warning ?
         pass
 
