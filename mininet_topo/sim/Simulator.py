@@ -16,7 +16,7 @@ def foo():
     """Empty function to not accidentally delete import from Device,Fluid,Sensor"""
     device = Device()
     fluid = Fluid()
-    sensor = Sensor()
+    sensor = Sensor(None, None)
 
 
 def check_reservoir_volume(devices: {}, last_volume: float, precision: int):
@@ -110,15 +110,8 @@ class Simulator(object):
                 # r.set(sensor.device_to_monitor.label, sensor.read_sensor())
             # read data from the redis server for each PLC
             # apply it to make the change according to the value read from redis
-
-        # for plc in self.plcs:
-        #     for sensor in self.plcs[plc]['sensors']:
-        #         self.plcs[plc]['sensors'][sensor][
-        #             'read_sensor'] = self.sensors[sensor].read_sensor
-        #         self.plcs[plc]['sensors'][sensor][
-        #             'write_sensor'] = self.sensors[sensor].write_sensor
-        # self.plcservice.loadPLCs(self.plcs)
-        # self.plcservice.start()
+            for plc in self.plcs.values():
+                plc.worker()
 
     def pause(self):
         """Pause the simulation"""

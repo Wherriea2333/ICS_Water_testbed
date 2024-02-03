@@ -8,17 +8,42 @@ log = logging.getLogger('phy_sim')
 
 
 class Sensor(yaml.YAMLObject):
-    def __init__(self, **kwargs):
+    def __init__(self, location=None, state=None, **kwargs):
         self.device_to_monitor_label = None
         self.device_to_monitor = None
         self.precision = 10
-        self.location = None
+        self.location = location
+        self.location_tuple = None
+        self.active = False
+        self.state = state
         super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     @classmethod
     def from_yaml(cls, loader, node):
         fields = loader.construct_mapping(node, deep=False)
         return cls(**fields)
+
+    def activate(self):
+        """Set this sensor as active so the worker gets called"""
+        if not self.active:
+            self.active = True
+        log.info(f"{self}: Active")
+
+    def deactivate(self):
+        """Set this sensor as inactive to prevent the worker from being called"""
+        if self.active:
+            self.active = False
+        log.info(f"{self}: Inactive")
+
+    def read_state(self):
+        return self.state
+
+    def write_state(self, state=None):
+        """ Set the sensor state"""
+        if state is not None:
+            self.state = state
+            return True
+        return False
 
     def worker(self):
         """Do something at `worker_frequency` rate
@@ -29,6 +54,18 @@ class Sensor(yaml.YAMLObject):
         """Attach to a device
         """
         self.device_to_monitor = device
+
+    def set_location_tuple(self):
+        if "QX" in self.location:
+            qx = self.location.split("QX")
+            location = qx[1].split(".")
+            self.location_tuple = (qx[0], location[0], location[1])
+        elif "QW" in self.location:
+            qw = self.location.split("QW")
+            self.location_tuple = (qw[0], qw[1])
+        elif "MD" in self.location:
+            md = self.location.split("MD")
+            self.location_tuple = (md[0], md[1])
 
     @abstractmethod
     def read_sensor(self):
@@ -43,32 +80,6 @@ class Sensor(yaml.YAMLObject):
             E.g. open/close valve
         """
         pass
-
-
-# class pHSensor(Sensor):
-#     yaml_tag = u'!ph'
-#
-#     def __init__(self, connected_to=None, **kwargs):
-#         self.ph = None
-#         self.device_to_monitor = connected_to
-#         super(Sensor, self).__init__(device_type="sensor", **kwargs)
-#
-#     def input(self, fluid, volume):
-#         """When fluid comes in, store the fluid context, and pass it downstream to all connected devices
-#         """
-#         self.ph = fluid.ph
-#
-#         log.debug("ph: ", self.ph)
-#
-#         accepted_volume = 0
-#         for o in self.outputs:
-#             accepted_volume = self.outputs[o].input(fluid, volume)
-#         return accepted_volume
-#
-#     def read_sensor(self):
-#         """ Report sensor value
-#         """
-#         return self.ph
 
 
 class FlowRateSensor(Sensor):

@@ -70,12 +70,24 @@ def build_simulation(config, math_parser):
     # process sensors
     for sensor in config['sensors']:
         device_to_monitor = devices[sensor.device_to_monitor_label]
+        sensor.set_location_tuple()
         sensor.monitor_device(device_to_monitor)
         sensors[sensor.label] = sensor
+
+    for sensor in sensors.values():
+        log.debug(f"{sensor}")
+        log.debug(f"location:  {sensor.location}")
+        log.debug(f"location tuple:  {sensor.location_tuple}")
+        log.debug(f"device to monitor:  {sensor.device_to_monitor_label}")
 
     for plc in config['PLCs']:
         for sensor_label in plc.controlled_sensors_label:
             plc.controlled_sensors[sensor_label] = sensors[sensor_label]
         plcs[plc.label] = plc
+
+    for plc in plcs.values():
+        log.debug(f"{plc}")
+        log.debug(f"location:  {plc.label}")
+        # log.debug(f"controlled sensor:  {plc.controlled_sensors_label}")
 
     return {'settings': settings, 'devices': devices, 'sensors': sensors, 'PLCs': plcs}

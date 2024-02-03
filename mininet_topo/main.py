@@ -18,6 +18,8 @@ from mininet.node import Node
 
 
 SIMULATION = "simulation"
+PLC = "plc"
+SCADA = "scada"
 OPENPLC_BASH = "install_openplc.sh"
 
 
@@ -118,13 +120,15 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
         #     launch the redis server
         #     host.cmd("redis-server ./redis.conf")
         """
-        if host.name == SIMULATION:
+        if SIMULATION == host.name:
             # copy the folder with all physics into the host
             copy_physic_simulation(host)
             install_redis_tools(host)
-        else:
+        elif PLC in host.name:
             install_redis_tools(host)
             install_open_plc(host)
+        elif SCADA == host.name:
+            pass
     return root
 
 
@@ -184,19 +188,17 @@ class star_topology(IPTopo):
     def build(self, *args, **kwargs):
         s1 = self.addSwitch('s1')
 
-        plc1 = self.addHost('plc1', ip='192.168.1.2/24')
-        plc2 = self.addHost('plc2', ip='192.168.1.3/24')
-        plc3 = self.addHost('plc3', ip='192.168.1.4/24')
-        plc4 = self.addHost('plc4', ip='192.168.1.5/24')
-        plc5 = self.addHost('plc5', ip='192.168.1.6/24')
-        plc6 = self.addHost('plc6', ip='192.168.1.7/24')
+        plc1 = self.addHost('plc1', ip='192.168.1.11/24')
+        plc2 = self.addHost('plc2', ip='192.168.1.12/24')
+        plc3 = self.addHost('plc3', ip='192.168.1.13/24')
+        plc4 = self.addHost('plc4', ip='192.168.1.14/24')
+        plc5 = self.addHost('plc5', ip='192.168.1.15/24')
+        plc6 = self.addHost('plc6', ip='192.168.1.16/24')
 
-        sim = self.addHost(SIMULATION, ip='192.168.1.11/24')
-
-        # redis = self.addHost(REDIS, ip='192.168.1.10/24')
+        sim = self.addHost(SIMULATION, ip='192.168.1.10/24')
 
         # TODO: change this scada system with a real one ...
-        scada = self.addHost("scada", ip='192.168.1.12/24')
+        scada = self.addHost("scada", ip='192.168.1.9/24')
 
         # add link to each switch with its PLC
         self.addLink(s1, plc1)

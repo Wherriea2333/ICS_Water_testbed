@@ -200,10 +200,14 @@ connections:
 sensors:
   - !state
     label: P101
+    state: 'on'
     connected_to: P-101
+    location: QX0.0
   - !state
     label: P102
+    state: 'on'
     connected_to: P-102
+    location: QX0.1
 #  - !state
 #    label: MV101
 #    connected_to: MV-101
@@ -212,67 +216,116 @@ sensors:
 #    connected_to: MV-101
   - !flowrate
     label: FIT201
+    state: 'on'
     connected_to: MV-201
+    location: MD1
+  - !volume
+    label: LIT101
+    state: 'on'
+    connected_to: T-101
+    location: QW1
   - !state
     label: MV201
+    state: 'on'
     connected_to: MV-201
+    location: QX0.6
   - !state
     label: P301
+    state: 'on'
     connected_to: P-301
+    location: QX0.0
   - !state
     label: P302
+    state: 'on'
     connected_to: P-302
+    location: QX0.1
   - !state
     label: MV302
+    state: 'on'
     connected_to: MV-302
+    location: QX0.2
   - !volume
     label: LIT301
+    state: 'on'
     connected_to: T-301
+    location: QW1
   - !flowrate
     label: FIT301
+    state: 'on'
     connected_to: UF-301
+    location: MD0
   - !state
     label: P401
+    state: 'on'
     connected_to: P-401
+    location: QX0.0
   - !state
     label: P402
+    state: 'on'
     connected_to: P-402
+    location: QX0.1
   - !volume
     label: LIT401
+    state: 'on'
     connected_to: T-401
+    location: QW1
   - !flowrate
     label: FIT401
+    state: 'on'
     connected_to: UV-401
+    location: MD0
   - !state
     label: MV501
+    state: 'on'
     connected_to: MV-501
+    location: QX0.0
   - !state
     label: MV502
+    state: 'on'
     connected_to: MV-502
+    location: QX0.1
   - !state
     label: P501
+    state: 'on'
     connected_to: P501
+    location: QX0.2
   - !state
     label: P502
+    state: 'on'
     connected_to: P502
+    location: QX0.3
   - !flowrate
     label: FIT501
+    state: 'on'
     connected_to: Filter-501
+    location: MD0
   - !flowrate
     label: FIT502
+    state: 'on'
     connected_to: MV-501
+    location: MD1
   - !flowrate
     label: FIT503
+    state: 'on'
     connected_to: MV-503
+    location: MD2
   - !state
     label: P601
+    state: 'on'
     connected_to: P-601
+    location: QX0.0
   - !state
     label: P603
+    state: 'on'
     connected_to: P-603
+    location: QX0.1
   - !volume
     label: LS601
+    state: 'on'
     connected_to: T-601
+    location: QW0
   - !volume
     label: LS603
+    state: 'on'
     connected_to: T-603
+    location: QW1
