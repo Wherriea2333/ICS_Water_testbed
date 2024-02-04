@@ -18,6 +18,8 @@ class InvalidPLC(Exception):
 
 
 class PLC(yaml.YAMLObject):
+    yaml_tag = u'!plc'
+    yaml_loader = yaml.CLoader
 
     def __init__(self, label='', state=None, host=None, port=502, controlled_sensors_label=None):
         if host is None:

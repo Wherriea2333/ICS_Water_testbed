@@ -10,7 +10,7 @@ PROGRAM RawWater
     ContainerMaxVolume AT %QW0 : INT := 1000;
   END_VAR
   VAR
-    ContainerCurrentVolume AT %QW1 : INT;
+    LIT101 AT %QW1 : INT;
   END_VAR
 
   P101 := P101;

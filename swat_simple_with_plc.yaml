@@ -329,3 +329,60 @@ sensors:
     state: 'on'
     connected_to: T-603
     location: QW1
+
+plcs:
+  - !plc
+    label: PLC1
+    state: 'on'
+    host: 192.168.1.11
+    controlled_sensors_label:
+      - P101
+      - P102
+      - FIT201
+      - LIT101
+  - !plc
+    label: PLC2
+    state: 'on'
+    host: 192.168.1.12
+    controlled_sensors_label:
+      - MV201
+  - !plc
+    label: PLC3
+    state: 'on'
+    host: 192.168.1.13
+    controlled_sensors_label:
+      - P301
+      - P302
+      - MV302
+      - LIT301
+      - FIT301
+  - !plc
+    label: PLC4
+    state: 'on'
+    host: 192.168.1.14
+    controlled_sensors_label:
+      - P401
+      - P402
+      - LIT401
+      - FIT401
+  - !plc
+    label: PLC5
+    state: 'on'
+    host: 192.168.1.15
+    controlled_sensors_label:
+      - MV501
+      - MV502
+      - P501
+      - P502
+      - FIT501
+      - FIT502
+      - FIT503
+  - !plc
+    label: PLC6
+    state: 'on'
+    host: 192.168.1.16
+    controlled_sensors_label:
+      - P601
+      - P603
+      - LIT601
+      - LIT603
