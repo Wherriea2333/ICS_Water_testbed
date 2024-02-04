@@ -1,4 +1,5 @@
 import logging
+import uuid
 from abc import abstractmethod
 
 import sympy.core.evalf as sp_evalf
@@ -8,15 +9,16 @@ log = logging.getLogger('phy_sim')
 
 
 class Sensor(yaml.YAMLObject):
-    def __init__(self, location=None, state=None, **kwargs):
-        self.device_to_monitor_label = None
+    def __init__(self, label='', location=None, state=None, connected_to=None):
+        self.uid = str(uuid.uuid4())[:8]
+        self.label = label
+        self.device_to_monitor_label = connected_to
         self.device_to_monitor = None
         self.precision = 10
         self.location = location
         self.location_tuple = None
         self.active = False
         self.state = state
-        super(Sensor, self).__init__(device_type="sensor", **kwargs)
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -27,13 +29,13 @@ class Sensor(yaml.YAMLObject):
         """Set this sensor as active so the worker gets called"""
         if not self.active:
             self.active = True
-        log.info(f"{self}: Active")
+        log.info(f"{self.label}: Active")
 
     def deactivate(self):
         """Set this sensor as inactive to prevent the worker from being called"""
         if self.active:
             self.active = False
-        log.info(f"{self}: Inactive")
+        log.info(f"{self.label}: Inactive")
 
     def read_state(self):
         return self.state
@@ -45,6 +47,7 @@ class Sensor(yaml.YAMLObject):
             return True
         return False
 
+    @abstractmethod
     def worker(self):
         """Do something at `worker_frequency` rate
         """
@@ -59,13 +62,13 @@ class Sensor(yaml.YAMLObject):
         if "QX" in self.location:
             qx = self.location.split("QX")
             location = qx[1].split(".")
-            self.location_tuple = (qx[0], location[0], location[1])
+            self.location_tuple = ("QX", location[0], location[1])
         elif "QW" in self.location:
             qw = self.location.split("QW")
-            self.location_tuple = (qw[0], qw[1])
+            self.location_tuple = ("QW", qw[1])
         elif "MD" in self.location:
             md = self.location.split("MD")
-            self.location_tuple = (md[0], md[1])
+            self.location_tuple = ("MD", md[1])
 
     @abstractmethod
     def read_sensor(self):
@@ -84,12 +87,11 @@ class Sensor(yaml.YAMLObject):
 
 class FlowRateSensor(Sensor):
     yaml_tag = u'!flowrate'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
-    def __init__(self, connected_to=None, **kwargs):
-        self.device_to_monitor_label = connected_to
+    def __init__(self, **kwargs):
         self.flowrate = 0
-        super(Sensor, self).__init__(device_type="sensor", **kwargs)
+        super().__init__(**kwargs)
 
     def worker(self):
         """Get the volume of `device_to_monitor`
@@ -109,11 +111,13 @@ class FlowRateSensor(Sensor):
 
 class StateSensor(Sensor):
     yaml_tag = u'!state'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
-    def __init__(self, connected_to=None, **kwargs):
-        self.device_to_monitor_label = connected_to
-        super(Sensor, self).__init__(device_type="sensor", **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def worker(self):
+        pass
 
     def read_sensor(self):
         """ Report device state
@@ -129,12 +133,11 @@ class StateSensor(Sensor):
 
 class VolumeSensor(Sensor):
     yaml_tag = u'!volume'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
-    def __init__(self, connected_to=None, **kwargs):
+    def __init__(self,**kwargs):
         self.volume = 0
-        self.device_to_monitor_label = connected_to
-        super(Sensor, self).__init__(device_type="sensor", **kwargs)
+        super().__init__(**kwargs)
 
     def worker(self):
         """Get the volume of `device_to_monitor`

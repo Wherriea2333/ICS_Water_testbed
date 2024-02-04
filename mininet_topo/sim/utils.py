@@ -1,8 +1,7 @@
+import logging
 from enum import Enum
 
-from yaml import CLoader
-
-from mininet_topo.sim.Device import *
+import yaml
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')
@@ -16,7 +15,7 @@ class Allowed_math_type(Enum):
 
 def parse_yml(path_to_yml_file):
     with open(path_to_yml_file, 'r') as stream:
-        config = yaml.load(stream, Loader=CLoader)
+        config = yaml.load(stream, Loader=yaml.Loader)
     return config
 
 
@@ -75,19 +74,18 @@ def build_simulation(config, math_parser):
         sensors[sensor.label] = sensor
 
     for sensor in sensors.values():
-        log.debug(f"{sensor}")
+        log.debug(f"{sensor.label}")
         log.debug(f"location:  {sensor.location}")
         log.debug(f"location tuple:  {sensor.location_tuple}")
         log.debug(f"device to monitor:  {sensor.device_to_monitor_label}")
 
-    for plc in config['PLCs']:
+    for plc in config['plcs']:
         for sensor_label in plc.controlled_sensors_label:
             plc.controlled_sensors[sensor_label] = sensors[sensor_label]
         plcs[plc.label] = plc
 
     for plc in plcs.values():
-        log.debug(f"{plc}")
-        log.debug(f"location:  {plc.label}")
+        log.debug(f"{plc.label}")
         # log.debug(f"controlled sensor:  {plc.controlled_sensors_label}")
 
-    return {'settings': settings, 'devices': devices, 'sensors': sensors, 'PLCs': plcs}
+    return {'settings': settings, 'devices': devices, 'sensors': sensors, 'plcs': plcs}

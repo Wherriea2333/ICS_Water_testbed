@@ -4,8 +4,8 @@ import sys
 from mininet_topo.sim.Device import *
 from mininet_topo.sim.Fluid import *
 from mininet_topo.sim.Sensor import *
+from mininet_topo.sim.Plc import *
 from mininet_topo.sim.utils import parse_yml, build_simulation
-import redis
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')
@@ -17,6 +17,7 @@ def foo():
     device = Device()
     fluid = Fluid()
     sensor = Sensor(None, None)
+    plc = PLC()
 
 
 def check_reservoir_volume(devices: {}, last_volume: float, precision: int):

@@ -88,13 +88,13 @@ class Device(yaml.YAMLObject):
         """Set this device as active so the worker gets called"""
         if not self.active:
             self.active = True
-        log.info(f"{self}: Active")
+        log.info(f"{self.label}: Active")
 
     def deactivate(self):
         """Set this device as inactive to prevent the worker from being called"""
         if self.active:
             self.active = False
-        log.info(f"{self}: Inactive")
+        log.info(f"{self.label}: Inactive")
 
     def read_state(self):
         return self.state
@@ -189,7 +189,7 @@ class Device(yaml.YAMLObject):
 
 class Pump(Device):
     yaml_tag = u'!pump'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, device_type='pump', state='off', volume_per_cycle=1, **kwargs):
         state = bool(['off', 'on'].index(state))
@@ -231,7 +231,7 @@ class Pump(Device):
 
 class Valve(Device):
     yaml_tag = u'!valve'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, device_type='valve', state='closed', **kwargs):
         state = bool(['closed', 'open'].index(state))
@@ -270,7 +270,7 @@ class Valve(Device):
 
 class Filter(Device):
     yaml_tag = u'!filter'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, device_type='filter', **kwargs):
         super(Filter, self).__init__(device_type=device_type, **kwargs)
@@ -291,7 +291,7 @@ class Filter(Device):
 class Tank(Device):
     """Infinite volume tank!"""
     yaml_tag = u'!tank'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, volume=0, max_volume=float('inf'), device_type='tank', **kwargs):
         self.volume = volume
@@ -363,7 +363,7 @@ class Tank(Device):
 
 class Reservoir(Tank):
     yaml_tag = u'!reservoir'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, input_per_cycle=0, **kwargs):
         self.input_per_cycle = input_per_cycle
@@ -377,7 +377,7 @@ class Reservoir(Tank):
 
 class Vessel(Tank):
     yaml_tag = u'!vessel'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, device_type='vessel', **kwargs):
         # self.max_volume = max_volume

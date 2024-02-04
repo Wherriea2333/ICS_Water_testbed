@@ -1,10 +1,11 @@
 import logging
 import uuid
+from abc import abstractmethod
 
 import yaml
 from pymodbus.client import ModbusTcpClient
 
-from mininet_topo.sim.Sensor import *
+from mininet_topo.sim.Sensor import StateSensor, VolumeSensor, FlowRateSensor
 
 log = logging.getLogger('plc')
 
@@ -17,9 +18,7 @@ class InvalidPLC(Exception):
         super(InvalidPLC, self).__init__(message)
 
 
-class PLC(yaml.YAMLObject):
-    yaml_tag = u'!plc'
-    yaml_loader = yaml.CLoader
+class Base_PLC(yaml.YAMLObject):
 
     def __init__(self, label='', state=None, host=None, port=502, controlled_sensors_label=None):
         if host is None:
@@ -61,6 +60,18 @@ class PLC(yaml.YAMLObject):
 
     def write_single_register(self, location, value):
         return self.client.write_register(location, value)
+
+    @abstractmethod
+    def worker(self):
+        pass
+
+
+class PLC(Base_PLC):
+    yaml_tag = u'!plc'
+    yaml_loader = yaml.Loader
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def worker(self):
         # each sensor read/write for himself

@@ -1,7 +1,7 @@
 PROGRAM ReverseOsmosis
   VAR
     MV501 AT %QX0.0 : BOOL;
-    MV502 AT %QX0.1 : BOOL;
+    MV503 AT %QX0.1 : BOOL;
     P501 AT %QX0.2 : BOOL;
     P502 AT %QX0.3 : BOOL;
     FIT501 AT %MD0 : REAL;
@@ -10,7 +10,7 @@ PROGRAM ReverseOsmosis
   END_VAR
 
   MV501 := MV501;
-  MV502 := MV502;
+  MV503 := MV503;
   P501 := P501;
   P502 := P502;
 END_PROGRAM

@@ -47,7 +47,7 @@ class Fluid(yaml.YAMLObject):
 
 class Water(Fluid):
     yaml_tag = u'!water'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, **kwargs):
         super(Water, self).__init__(fluid_type='water', **kwargs)
@@ -56,7 +56,7 @@ class Water(Fluid):
 
 class Chlorine(Fluid):
     yaml_tag = u'!chlorine'
-    yaml_loader = yaml.CLoader
+    yaml_loader = yaml.Loader
 
     def __init__(self, **kwargs):
         super(Chlorine, self).__init__(fluid_type='chlorine', **kwargs)

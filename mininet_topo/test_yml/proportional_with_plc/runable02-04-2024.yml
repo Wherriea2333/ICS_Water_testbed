@@ -6,7 +6,8 @@ settings:
 devices:
   - !reservoir
     label: T-101
-    volume: 1000
+    max_volume: 1000
+    volume: 600
     fluid: !water {}
     input_per_cycle: 0
   - !pump
@@ -22,7 +23,8 @@ devices:
     state: 'open'
   - !reservoir
     label: T-301
-    volume: 1000
+    max_volume: 1000
+    volume: 0
     fluid: !water {}
   - !pump
     label: P-301
@@ -40,7 +42,8 @@ devices:
     label: UF-301
   - !reservoir
     label: T-401
-    volume: 1000
+    max_volume: 1000
+    volume: 0
     fluid: !water {}
   - !pump
     label: P-401
@@ -71,10 +74,6 @@ devices:
     label: RO-502
     volume: 0
     max_volume: 40
-  - !vessel
-    label: RO-503
-    volume: 0
-    max_volume: 40
   - !pump
     label: P-501
     volume_per_cycle: 10
@@ -87,25 +86,26 @@ devices:
     label: MV-501
     state: 'open'
   - !valve
-    label: MV-502
+    label: MV-503
     state: 'closed'
   - !reservoir
     label: T-601
-    volume: 1000
+    max_volume: 1000
+    volume: 0
     fluid: !water {}
   - !reservoir
     label: T-603
-    volume: 1000
+    max_volume: 1000
+    volume: 0
     fluid: !water {}
   - !pump
     label: P-601
     volume_per_cycle: 10
-    state: 'on'
+    state: 'off'
   - !pump
     label: P-603
     volume_per_cycle: 10
-    state: 'on'
-
+    state: 'off'
 
 connections:
   T-101:
@@ -165,20 +165,14 @@ connections:
   RO-501:
     outputs:
       - MV-501
-      - RO-503
   RO-502:
     outputs:
       - MV-501
-      - RO-503
-  RO-503:
-    outputs:
-      - MV-501
-      - MV-502
   MV-501:
     outputs:
       - T-603
       - T-601
-  MV-502:
+  MV-503:
     outputs:
       - P-501
       - P-502
@@ -195,7 +189,6 @@ connections:
   P-601:
     outputs:
       - T-101
-
 
 sensors:
   - !state
@@ -280,19 +273,19 @@ sensors:
     connected_to: MV-501
     location: QX0.0
   - !state
-    label: MV502
-    state: 'on'
-    connected_to: MV-502
+    label: MV503
+    state: 'off'
+    connected_to: MV-503
     location: QX0.1
   - !state
     label: P501
     state: 'on'
-    connected_to: P501
+    connected_to: P-501
     location: QX0.2
   - !state
     label: P502
     state: 'on'
-    connected_to: P502
+    connected_to: P-502
     location: QX0.3
   - !flowrate
     label: FIT501
@@ -371,7 +364,7 @@ plcs:
     host: 192.168.1.15
     controlled_sensors_label:
       - MV501
-      - MV502
+      - MV503
       - P501
       - P502
       - FIT501
@@ -384,5 +377,5 @@ plcs:
     controlled_sensors_label:
       - P601
       - P603
-      - LIT601
-      - LIT603
+      - LS601
+      - LS603
