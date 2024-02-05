@@ -87,6 +87,19 @@ class Simulator(object):
         """
 
         """Start the simulation"""
+        # TODO: being adaptable
+
+        log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+        root_logger = logging.getLogger()
+        file_handler = logging.FileHandler("simulator.log")
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(log_formatter)
+        root_logger.addHandler(file_handler)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(log_formatter)
+        root_logger.addHandler(console_handler)
+
         for device in self.devices.values():
             device.activate()
 

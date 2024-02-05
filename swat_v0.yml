@@ -1,0 +1,381 @@
+settings:
+  speed: 1
+  precision: 5
+  max_cycle: 10
+
+devices:
+  - !reservoir
+    label: T-101
+    max_volume: 1000
+    volume: 600
+    fluid: !water {}
+    input_per_cycle: 0
+  - !pump
+    label: P-101
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-102
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-201
+    state: 'open'
+  - !reservoir
+    label: T-301
+    max_volume: 1000
+    volume: 0
+    fluid: !water {}
+  - !pump
+    label: P-301
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-302
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-302
+    state: 'open'
+  # UF Membrane as a filter
+  - !filter
+    label: UF-301
+  - !reservoir
+    label: T-401
+    max_volume: 1000
+    volume: 0
+    fluid: !water {}
+  - !pump
+    label: P-401
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-402
+    volume_per_cycle: 10
+    state: 'on'
+  # UV dechlorinator
+  - !filter
+    label: UV-401
+  - !filter
+    label: Filter-501
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'on'
+  - !vessel
+    label: RO-501
+    volume: 0
+    max_volume: 40
+  - !vessel
+    label: RO-502
+    volume: 0
+    max_volume: 40
+  - !pump
+    label: P-501
+    volume_per_cycle: 10
+    state: 'on'
+  - !pump
+    label: P-502
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-501
+    state: 'open'
+  - !valve
+    label: MV-503
+    state: 'closed'
+  - !reservoir
+    label: T-601
+    max_volume: 1000
+    volume: 0
+    fluid: !water {}
+  - !reservoir
+    label: T-603
+    max_volume: 1000
+    volume: 0
+    fluid: !water {}
+  - !pump
+    label: P-601
+    volume_per_cycle: 10
+    state: 'off'
+  - !pump
+    label: P-603
+    volume_per_cycle: 10
+    state: 'off'
+
+connections:
+  T-101:
+    outputs:
+      - P-101
+      - P-102
+  P-101:
+    outputs:
+      - MV-201
+  P-102:
+    outputs:
+      - MV-201
+  MV-201:
+    outputs:
+      - T-301
+  T-301:
+    outputs:
+      - P-301
+      - P-302
+  P-301:
+    outputs:
+      - UF-301
+  P-302:
+    outputs:
+      - UF-301
+  UF-301:
+    outputs:
+      - MV-302
+  MV-302:
+    outputs:
+      - T-401
+  T-401:
+    outputs:
+      - P-401
+      - P-402
+  P-401:
+    outputs:
+      - UV-401
+  P-402:
+    outputs:
+      - UV-401
+  UV-401:
+    outputs:
+      - Filter-501
+  Filter-501:
+    outputs:
+      - P-501
+      - P-502
+  P-501:
+    outputs:
+      - RO-501
+      - RO-502
+  P-502:
+    outputs:
+      - RO-501
+      - RO-502
+  RO-501:
+    outputs:
+      - MV-501
+  RO-502:
+    outputs:
+      - MV-501
+  MV-501:
+    outputs:
+      - T-603
+      - T-601
+  MV-503:
+    outputs:
+      - P-501
+      - P-502
+  T-603:
+    outputs:
+      - P-603
+  P-603:
+    outputs:
+      - RO-501
+      - RO-502
+  T-601:
+    outputs:
+      - P-601
+  P-601:
+    outputs:
+      - T-101
+
+sensors:
+  - !state
+    label: P101
+    state: 'on'
+    connected_to: P-101
+    location: QX0.0
+  - !state
+    label: P102
+    state: 'on'
+    connected_to: P-102
+    location: QX0.1
+#  - !state
+#    label: MV101
+#    connected_to: MV-101
+#  - !flowrate
+#    label: FIT101
+#    connected_to: MV-101
+  - !flowrate
+    label: FIT201
+    state: 'on'
+    connected_to: MV-201
+    location: MD1
+  - !volume
+    label: LIT101
+    state: 'on'
+    connected_to: T-101
+    location: QW1
+  - !state
+    label: MV201
+    state: 'on'
+    connected_to: MV-201
+    location: QX0.6
+  - !state
+    label: P301
+    state: 'on'
+    connected_to: P-301
+    location: QX0.0
+  - !state
+    label: P302
+    state: 'on'
+    connected_to: P-302
+    location: QX0.1
+  - !state
+    label: MV302
+    state: 'on'
+    connected_to: MV-302
+    location: QX0.2
+  - !volume
+    label: LIT301
+    state: 'on'
+    connected_to: T-301
+    location: QW1
+  - !flowrate
+    label: FIT301
+    state: 'on'
+    connected_to: UF-301
+    location: MD0
+  - !state
+    label: P401
+    state: 'on'
+    connected_to: P-401
+    location: QX0.0
+  - !state
+    label: P402
+    state: 'on'
+    connected_to: P-402
+    location: QX0.1
+  - !volume
+    label: LIT401
+    state: 'on'
+    connected_to: T-401
+    location: QW1
+  - !flowrate
+    label: FIT401
+    state: 'on'
+    connected_to: UV-401
+    location: MD0
+  - !state
+    label: MV501
+    state: 'on'
+    connected_to: MV-501
+    location: QX0.0
+  - !state
+    label: MV503
+    state: 'off'
+    connected_to: MV-503
+    location: QX0.1
+  - !state
+    label: P501
+    state: 'on'
+    connected_to: P-501
+    location: QX0.2
+  - !state
+    label: P502
+    state: 'on'
+    connected_to: P-502
+    location: QX0.3
+  - !flowrate
+    label: FIT501
+    state: 'on'
+    connected_to: Filter-501
+    location: MD0
+  - !flowrate
+    label: FIT502
+    state: 'on'
+    connected_to: MV-501
+    location: MD1
+  - !flowrate
+    label: FIT503
+    state: 'on'
+    connected_to: MV-503
+    location: MD2
+  - !state
+    label: P601
+    state: 'on'
+    connected_to: P-601
+    location: QX0.0
+  - !state
+    label: P603
+    state: 'on'
+    connected_to: P-603
+    location: QX0.1
+  - !volume
+    label: LS601
+    state: 'on'
+    connected_to: T-601
+    location: QW0
+  - !volume
+    label: LS603
+    state: 'on'
+    connected_to: T-603
+    location: QW1
+
+plcs:
+  - !plc
+    label: PLC1
+    state: 'on'
+    host: 192.168.1.11
+    controlled_sensors_label:
+      - P101
+      - P102
+      - FIT201
+      - LIT101
+  - !plc
+    label: PLC2
+    state: 'on'
+    host: 192.168.1.12
+    controlled_sensors_label:
+      - MV201
+  - !plc
+    label: PLC3
+    state: 'on'
+    host: 192.168.1.13
+    controlled_sensors_label:
+      - P301
+      - P302
+      - MV302
+      - LIT301
+      - FIT301
+  - !plc
+    label: PLC4
+    state: 'on'
+    host: 192.168.1.14
+    controlled_sensors_label:
+      - P401
+      - P402
+      - LIT401
+      - FIT401
+  - !plc
+    label: PLC5
+    state: 'on'
+    host: 192.168.1.15
+    controlled_sensors_label:
+      - MV501
+      - MV503
+      - P501
+      - P502
+      - FIT501
+      - FIT502
+      - FIT503
+  - !plc
+    label: PLC6
+    state: 'on'
+    host: 192.168.1.16
+    controlled_sensors_label:
+      - P601
+      - P603
+      - LS601
+      - LS603

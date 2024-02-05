@@ -189,11 +189,11 @@ class star_topology(IPTopo):
         s1 = self.addSwitch('s1')
 
         plc1 = self.addHost('plc1', ip='192.168.1.11/24')
-        plc2 = self.addHost('plc2', ip='192.168.1.12/24')
-        plc3 = self.addHost('plc3', ip='192.168.1.13/24')
-        plc4 = self.addHost('plc4', ip='192.168.1.14/24')
-        plc5 = self.addHost('plc5', ip='192.168.1.15/24')
-        plc6 = self.addHost('plc6', ip='192.168.1.16/24')
+        # plc2 = self.addHost('plc2', ip='192.168.1.12/24')
+        # plc3 = self.addHost('plc3', ip='192.168.1.13/24')
+        # plc4 = self.addHost('plc4', ip='192.168.1.14/24')
+        # plc5 = self.addHost('plc5', ip='192.168.1.15/24')
+        # plc6 = self.addHost('plc6', ip='192.168.1.16/24')
 
         sim = self.addHost(SIMULATION, ip='192.168.1.10/24')
 
@@ -202,11 +202,11 @@ class star_topology(IPTopo):
 
         # add link to each switch with its PLC
         self.addLink(s1, plc1)
-        self.addLink(s1, plc2)
-        self.addLink(s1, plc3)
-        self.addLink(s1, plc4)
-        self.addLink(s1, plc5)
-        self.addLink(s1, plc6)
+        # self.addLink(s1, plc2)
+        # self.addLink(s1, plc3)
+        # self.addLink(s1, plc4)
+        # self.addLink(s1, plc5)
+        # self.addLink(s1, plc6)
         # add link s1 to scada system
         self.addLink(s1, scada)
         # add link to simulation
@@ -215,7 +215,7 @@ class star_topology(IPTopo):
 
 
 if __name__ == '__main__':
-    net = IPNet(topo=Simplest_test_network(), use_v6=False, allocate_IPs=False, waitConnected=True)
+    net = IPNet(topo=star_topology(), use_v6=False, allocate_IPs=False, waitConnected=True)
 
     rootnode = connectToInternet(net)
     #        net.start()
