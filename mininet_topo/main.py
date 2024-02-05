@@ -123,9 +123,10 @@ def connectToInternet(network, switch='s1', rootip='192.168.1.43/24', subnet='19
         if SIMULATION == host.name:
             # copy the folder with all physics into the host
             copy_physic_simulation(host)
-            install_redis_tools(host)
+            install_simulation_dependency(host)
+            # install_redis_tools(host)
         elif PLC in host.name:
-            install_redis_tools(host)
+            # install_redis_tools(host)
             install_open_plc(host)
         elif SCADA == host.name:
             pass
@@ -147,15 +148,21 @@ def install_redis_server(host):
 """
 
 
+def install_simulation_dependency(host):
+    host.cmd(f"cd {host.name}/sim || exit 1")
+    host.cmd(f"pip install -r requirements.txt")
+    host.cmd("cd ../.. || exit 1")
+
+
 def copy_physic_simulation(host):
-    host.cmd(f"cp -r sim {host}/sim")
+    host.cmd(f"cp -r sim {host.name}/sim")
 
 
-def install_redis_tools(host):
-    # sudo apt-get install redis-tools
-    host.cmd(f"cd {host.name} || exit 1")
-    host.cmd("sudo apt install redis-tools")
-    host.cmd("cd ..")
+# def install_redis_tools(host):
+#     # sudo apt-get install redis-tools
+#     host.cmd(f"cd {host.name} || exit 1")
+#     host.cmd("sudo apt install redis-tools")
+#     host.cmd("cd ..")
 
 
 def install_open_plc(host):

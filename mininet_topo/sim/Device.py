@@ -7,8 +7,8 @@ import sympy.parsing.mathematica as mp
 import sympy.parsing.sympy_parser as sp
 import yaml
 
-from mininet_topo.sim.Fluid import Fluid
-from mininet_topo.sim.utils import Allowed_math_type
+from Fluid import Fluid
+from utils import Allowed_math_type
 
 log = logging.getLogger('phy_sim')
 allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'vessel']

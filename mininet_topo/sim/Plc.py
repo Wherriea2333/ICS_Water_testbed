@@ -5,7 +5,7 @@ from abc import abstractmethod
 import yaml
 from pymodbus.client import ModbusTcpClient
 
-from mininet_topo.sim.Sensor import StateSensor, VolumeSensor, FlowRateSensor
+from Sensor import StateSensor, VolumeSensor, FlowRateSensor
 
 log = logging.getLogger('plc')
 

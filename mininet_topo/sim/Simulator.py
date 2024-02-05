@@ -1,11 +1,11 @@
 import signal
 import sys
 
-from mininet_topo.sim.Device import *
-from mininet_topo.sim.Fluid import *
-from mininet_topo.sim.Sensor import *
-from mininet_topo.sim.Plc import *
-from mininet_topo.sim.utils import parse_yml, build_simulation
+from Device import *
+from Fluid import *
+from Sensor import *
+from Plc import *
+from utils import parse_yml, build_simulation
 
 logging.basicConfig()
 log = logging.getLogger('phy_sim')

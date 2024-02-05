@@ -62,13 +62,13 @@ class Sensor(yaml.YAMLObject):
         if "QX" in self.location:
             qx = self.location.split("QX")
             location = qx[1].split(".")
-            self.location_tuple = ("QX", location[0], location[1])
+            self.location_tuple = ("QX", int(location[0]), int(location[1]))
         elif "QW" in self.location:
             qw = self.location.split("QW")
-            self.location_tuple = ("QW", qw[1])
+            self.location_tuple = ("QW", int(qw[1]))
         elif "MD" in self.location:
             md = self.location.split("MD")
-            self.location_tuple = ("MD", md[1])
+            self.location_tuple = ("MD", int(md[1]))
 
     @abstractmethod
     def read_sensor(self):
