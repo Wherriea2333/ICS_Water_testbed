@@ -1,5 +1,6 @@
 settings:
-  speed: 1
+  # speed : time to sleep between each cycle in millisecond
+  speed: 20
   precision: 5
   max_cycle: 10
 

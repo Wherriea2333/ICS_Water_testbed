@@ -11,9 +11,13 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', '--math_parser', help='Type of math expression parser',
                         default='proportional', choices=['proportional', 'sympy', 'wolfram'], action='store')
+    parser.add_argument('-g', '--generate', help='Generate openPLC ladder logic files', action='store_true')
+
     args = parser.parse_args()
 
     sim = Simulator(debug=args.verbose, math_parser=args.math_parser)
     sim.load_yml(args.config)
-
-    sim.start()
+    if args.generate:
+        sim.generate_st_files()
+    else:
+        sim.start()

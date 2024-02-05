@@ -1,5 +1,6 @@
 import signal
 import sys
+import time
 
 from Device import *
 from Fluid import *
@@ -69,7 +70,6 @@ class Simulator(object):
         self.sensors = simulation['sensors']
         self.plcs = simulation['plcs']
 
-        self.set_speed(self.settings['speed'])
         self.set_precision(self.settings['precision'])
         self.max_cycle = self.settings['max_cycle']
         self.set_current_tanks_volume()
@@ -108,7 +108,10 @@ class Simulator(object):
 
         for plc in self.plcs.values():
             plc.connect_plc()
+
         log.debug(self.devices)
+        log.debug("Wait 5 seconds to be sure the connection is established")
+        time.sleep(5)
 
         for i in range(self.max_cycle):
             for device in self.devices.values():
@@ -126,6 +129,7 @@ class Simulator(object):
             # apply it to make the change according to the value read from redis
             for plc in self.plcs.values():
                 plc.worker()
+            time.sleep(int(self.settings['speed'])/1000)
 
     def pause(self):
         """Pause the simulation"""
@@ -139,16 +143,6 @@ class Simulator(object):
         """Stop and destroy the simulation"""
         self.pause()
         sys.exit(0)
-
-    def set_speed(self, speed):
-        """Increase/Decrease the speed of the simulation
-            default: 1/second
-        """
-        for device in self.devices.values():
-            device.speed = speed
-
-        for sensor in self.sensors.values():
-            sensor.speed = speed
 
     def restart(self):
         """Stop and reload the simulation from the original config"""
@@ -169,3 +163,31 @@ class Simulator(object):
         for device in self.devices.values():
             if isinstance(device, Tank):
                 self.current_tanks_volume += device.volume
+
+    def generate_st_files(self):
+        for plc in self.plcs.values():
+            to_be_written = []
+            with open(f"{plc.label}.st", "w") as f:
+                to_be_written.append(f"PROGRAM {plc.label}\n")
+                to_be_written.append(f"  VAR\n")
+                coil_variable_code = []
+                for sensor in plc.controlled_sensors.values():
+                    data_type = None
+                    if sensor.location_tuple[0] == "QX":
+                        data_type = "BOOL"
+                        coil_variable_code.append(f"  {sensor.label} := {sensor.label};\n")
+                    elif sensor.location_tuple[0] == "QW":
+                        data_type = "INT"
+                    elif sensor.location_tuple[0] == "MD":
+                        data_type = "REAL"
+                    to_be_written.append(f"    {sensor.label} AT {sensor.location} : %{data_type};\n")
+                to_be_written.append(f"  END_VAR\n\n")
+                to_be_written.extend(coil_variable_code)
+                to_be_written.append("END_PROGRAM\n\n\n")
+                to_be_written.append("CONFIGURATION Config0\n\n")
+                to_be_written.append("  RESOURCE Res0 ON PLC\n")
+                to_be_written.append(f"    TASK task0(INTERVAL := T#{self.settings['speed']}ms,PRIORITY := 0);\n")
+                to_be_written.append(f"    PROGRAM instance0 WITH task0 : {plc.label};\n")
+                to_be_written.append("  END_RESOURCE\n")
+                to_be_written.append("END_CONFIGURATION\n")
+                f.writelines(to_be_written)
