@@ -27,6 +27,8 @@
 import psm
 import time
 
+# TODO: when variable in MDx, need to read it from MWx, divide by 10**precision, then write it to MDx
+
 # global variables
 P101 = "QX0.0"
 P102 = "QX0.1"

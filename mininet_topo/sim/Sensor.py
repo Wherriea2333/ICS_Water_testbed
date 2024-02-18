@@ -6,7 +6,8 @@ import sympy.core.evalf as sp_evalf
 import yaml
 
 log = logging.getLogger('phy_sim')
-
+# TODO: restrict the type of sensors
+# TODO: describe more the different label for each device in the readme
 
 class Sensor(yaml.YAMLObject):
     def __init__(self, label='', location=None, state=None, connected_to=None):

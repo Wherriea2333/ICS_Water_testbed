@@ -1,5 +1,5 @@
 settings:
-  speed: 1
+  speed: 20
   precision: 5
   max_cycle: 10
 

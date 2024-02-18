@@ -23,7 +23,7 @@ class Base_PLC(yaml.YAMLObject):
     def __init__(self, label='', state=None, host=None, port=502, controlled_sensors_label=None):
         if host is None:
             raise InvalidPLC(f"PLC {label} doesn't have host")
-
+        self.precision = 10
         self.uid = str(uuid.uuid4())[:8]
         self.label = label
         self.state = state
@@ -48,12 +48,12 @@ class Base_PLC(yaml.YAMLObject):
         log.info(f"PLC {self.label}: Disconnected")
 
     def read_single_bit_from_coil(self, location, count):
-        rr = self.client.read_coils(location, count)
-        return rr.bits[count - 1]
+        rr = self.client.read_coils(location, count + 1)
+        return rr.bits[count]
 
     def read_single_register(self, location, count):
-        rr = self.client.read_holding_registers(location, count)
-        return rr.registers[count - 1]
+        rr = self.client.read_holding_registers(location, count + 1)
+        return rr.registers[count]
 
     def write_single_bit_from_coil(self, location, value):
         return self.client.write_coil(location, value)
@@ -88,10 +88,11 @@ class PLC(Base_PLC):
                             sensor.device_to_monitor.deactivate()
                         self.write_single_bit_from_coil(sensor.location_tuple[1] * 8 + sensor.location_tuple[2], state)
             # if volume,flowrate -> write only
-            if type(sensor) == VolumeSensor or type(sensor) == FlowRateSensor:
+            elif type(sensor) == VolumeSensor or type(sensor) == FlowRateSensor:
                 # if "QX" == sensor.location_tuple[0]:
                 #     state = self.read_single_bit_from_coil(sensor.location_tuple[1], sensor.location_tuple[2])
                 if "QW" == sensor.location_tuple[0]:
-                    self.write_single_register(sensor.location_tuple[1], sensor.device_to_monitor.read_sensor())
+                    self.write_single_register(sensor.location_tuple[1], int(sensor.read_sensor()))
                 elif "MD" == sensor.location_tuple[0]:
-                    self.write_single_register(1024 + sensor.location_tuple[1], sensor.device_to_monitor.read_sensor())
+                    self.write_single_register(1024 + sensor.location_tuple[1],
+                                               int(sensor.read_sensor() * 10 ** self.precision))

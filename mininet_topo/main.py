@@ -69,7 +69,7 @@ def fixNetworkManager(root, intf):
     cfile = '/etc/network/interfaces'
     line = '\niface %s inet manual\n' % intf
     config = open(cfile).read()
-    if (line) not in config:
+    if line not in config:
         print('*** Adding', line.strip(), 'to', cfile)
         with open(cfile, 'a') as f:
             f.write(line)
@@ -149,9 +149,12 @@ def install_redis_server(host):
 
 
 def install_simulation_dependency(host):
+    # TODO: the installation doesnt work well !!...
     host.cmd(f"cd {host.name}/sim || exit 1")
-    host.cmd(f"pip install -r requirements.txt")
-    host.cmd("cd ../.. || exit 1")
+    host.cmd("pip install --upgrade pip")
+    host.cmd(f"pip install -r requirements.txt >> install_sim.log")
+    host.cmd("cd ..|| exit 1")
+    host.cmd("cd ..|| exit 1")
 
 
 def copy_physic_simulation(host):

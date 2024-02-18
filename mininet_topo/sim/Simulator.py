@@ -151,12 +151,15 @@ class Simulator(object):
         self.start()
 
     def set_precision(self, precision):
-        """set the number of output digits of sensors and devices"""
+        """set the number of output digits of devices, sensors, plc"""
         for device in self.devices.values():
             device.precision = precision
 
         for sensor in self.sensors.values():
             sensor.precision = precision
+
+        for plc in self.plcs.values():
+            plc.precision = precision
 
     def set_current_tanks_volume(self):
         """get the initial volume of fluid in tanks"""
@@ -180,7 +183,7 @@ class Simulator(object):
                         data_type = "INT"
                     elif sensor.location_tuple[0] == "MD":
                         data_type = "REAL"
-                    to_be_written.append(f"    {sensor.label} AT {sensor.location} : %{data_type};\n")
+                    to_be_written.append(f"    {sensor.label} AT %{sensor.location} : {data_type};\n")
                 to_be_written.append(f"  END_VAR\n\n")
                 to_be_written.extend(coil_variable_code)
                 to_be_written.append("END_PROGRAM\n\n\n")
