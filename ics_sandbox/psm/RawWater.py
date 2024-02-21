@@ -23,46 +23,51 @@
 # output (%QX0.0) is true, PSM will display "QX0.0 is true" on OpenPLC's
 # dashboard. Feel free to reuse this skeleton to write whatever you want.
 
-import time
-
 # import all your libraries here
 import psm
+import time
+
+# TODO: when variable in MDx, need to read it from MWx, divide by 10**precision, then write it to MDx
 
 # global variables
-P401 = "QX0.0"
-P402 = "QX0.1"
-LS401 = "QW0"
-LIT401 = "QW1"
-# TODO: add this max into the plc code
-ContainerMax = 1000  # psm.get_var("QW0")
-FIT401 = "MD0"
+P101 = "QX0.0"
+P102 = "QX0.1"
+MV101 = "QX0.2"
+FIT101 = "MD0"
+FIT201 = "MD1"
+ContainerMax = psm.get_var("QW0")
+LIT101 = "QW1"
 
 
 def hardware_init():
     # Insert your hardware initialization code in here
-
-    psm.set_var(P401, False)
-    psm.set_var(P402, False)
     psm.start()
+    psm.set_var(P101, True)
+    psm.set_var(P102, True)
+    psm.set_var(MV101, False)
 
 
 def update_inputs():
     # place here your code to update inputs
+
+    # if psm.get_var(FIT201) == 0:
+    #     psm.set_var(P101, False)
+    #     psm.set_var(P102, False)
+
     # min 20 %
-    if psm.get_var(LIT401) <= 0.2 * ContainerMax:
-        psm.set_var(P401, False)
-        psm.set_var(P402, False)
+    if psm.get_var(LIT101) <= 0.2 * ContainerMax:
+        psm.set_var(P101, False)
+        psm.set_var(P102, False)
     # max 80 %
-    if psm.get_var(LIT401) >= 0.8 * ContainerMax:
-        # find a way to output some warning ?
-        pass
+    if psm.get_var(LIT101) >= 0.8 * ContainerMax:
+        psm.set_var(MV101, False)
 
 
 def update_outputs():
     # place here your code to work on outputs
-    print(f" P101 is at {psm.get_var(P401)}")
-    print(f" P102 is at {psm.get_var(P402)}")
-    print(f" ContainerCurrentVolume is {psm.get_var(LIT401)}")
+    print(f" P101 is at {psm.get_var(P101)}")
+    print(f" P102 is at {psm.get_var(P102)}")
+    print(f" ContainerCurrentVolume is {psm.get_var(LIT101)}")
 
 
 if __name__ == "__main__":

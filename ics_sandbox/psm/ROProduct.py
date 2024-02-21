@@ -28,36 +28,49 @@ import psm
 import time
 
 # global variables
-MV501 = "QX0.0"
-MV502 = "QX0.1"
-P501 = "QX0.2"
-P502 = "QX0.3"
-
-FIT501 = "MD0"
-FIT502 = "MD1"
-FIT503 = "MD2"
+P601 = "QX0.0"
+P603 = "QX0.1"
+# TODO : add it to ladder
+T601ContainerMax = 1000
+T603ContainerMax = 1000
+LS601 = "QW0"
+LS603 = "QW1"
 
 def hardware_init():
     # Insert your hardware initialization code in here
-
-    psm.set_var(MV501, True)
-    psm.set_var(MV502, False)
-    psm.set_var(P501, False)
-    psm.set_var(P502, False)
-
     psm.start()
+    psm.set_var(P601, False)
+    psm.set_var(P603, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-    # if have to work, open P501,P502,MV501
-    # else do nothing
-    pass
 
+    # if psm.get_var(FIT201) == 0:
+    #     psm.set_var(P101, False)
+    #     psm.set_var(P102, False)
+
+    # T601
+    # min 20 %
+    if psm.get_var(LS601) <= 0.2 * T601ContainerMax:
+        psm.set_var(P601, False)
+    # max 80 %
+    if psm.get_var(LS601) >= 0.8 * T601ContainerMax:
+        psm.set_var(P601, True)
+
+    # T603
+    if psm.get_var(LS603) <= 0.2 * T603ContainerMax:
+        psm.set_var(P603, False)
+    if psm.get_var(LS603) >= 0.8 * T603ContainerMax:
+        psm.set_var(P603, True)
 
 def update_outputs():
     # place here your code to work on outputs
-    pass
+    print(f" P601 is at {psm.get_var(P601)}")
+    print(f" P603 is at {psm.get_var(P603)}")
+    print(f" T601 ContainerCurrentVolume is {psm.get_var(T601ContainerMax)}")
+    print(f" T603 ContainerCurrentVolume is {psm.get_var(T603ContainerMax)}")
+
 
 if __name__ == "__main__":
     hardware_init()

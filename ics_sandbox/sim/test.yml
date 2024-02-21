@@ -1,6 +1,6 @@
 settings:
   # speed : time to sleep between each cycle in millisecond
-  speed: 20
+  speed: 100
   precision: 5
   max_cycle: 10
 
@@ -80,7 +80,7 @@ plcs:
   - !plc
     label: PLC1
     state: 'on'
-    host: 192.168.1.11
+    host: 172.18.0.1
     controlled_sensors_label:
       - P101
       - P102

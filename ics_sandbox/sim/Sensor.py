@@ -8,10 +8,21 @@ import yaml
 log = logging.getLogger('phy_sim')
 # TODO: restrict the type of sensors
 # TODO: describe more the different label for each device in the readme
+allowed_device_types = ['flowrate', 'state', 'volume']
+
+
+class InvalidSensor(Exception):
+    """Exception thrown for bad device types
+    """
+
+    def __init__(self, message):
+        super(InvalidSensor, self).__init__(message)
+
 
 class Sensor(yaml.YAMLObject):
-    def __init__(self, label='', location=None, state=None, connected_to=None):
+    def __init__(self, label='', sensor_type=None, location=None, state=None, connected_to=None):
         self.uid = str(uuid.uuid4())[:8]
+        self.sensor_type = sensor_type
         self.label = label
         self.device_to_monitor_label = connected_to
         self.device_to_monitor = None
@@ -20,6 +31,9 @@ class Sensor(yaml.YAMLObject):
         self.location_tuple = None
         self.active = False
         self.state = state
+
+        if (not self.sensor_type) or (self.sensor_type not in allowed_device_types):
+            raise InvalidSensor(f"{self.sensor_type} in not a valid device type")
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -136,7 +150,7 @@ class VolumeSensor(Sensor):
     yaml_tag = u'!volume'
     yaml_loader = yaml.Loader
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self.volume = 0
         super().__init__(**kwargs)
 

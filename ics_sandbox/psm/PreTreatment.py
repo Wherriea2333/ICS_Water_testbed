@@ -23,47 +23,43 @@
 # output (%QX0.0) is true, PSM will display "QX0.0 is true" on OpenPLC's
 # dashboard. Feel free to reuse this skeleton to write whatever you want.
 
-import time
-
 # import all your libraries here
 import psm
+import time
 
 # global variables
-P301 = "QX0.0"
-P302 = "QX0.1"
-MV302 = "QX0.2"
-FIT301 = "MD0"
-FIT302 = "MD1"
-ContainerMax = psm.get_var("QW0")
-LIT301 = "QW1"
+P201 = "QX0.0"
+P202 = "QX0.1"
+P203 = "QX0.2"
+P204 = "QX0.3"
+P205 = "QX0.4"
+P206 = "QX0.5"
+
+MV201 = "QX0.6"
+LS201 = "QW0"
+LS202 = "QW1"
 
 
 def hardware_init():
     # Insert your hardware initialization code in here
-
-    psm.set_var(P301, False)
-    psm.set_var(P302, False)
-    psm.set_var(MV302, False)
     psm.start()
+    psm.set_var(P201, False)
+    psm.set_var(P202, False)
+    psm.set_var(P203, False)
+    psm.set_var(P204, False)
+    psm.set_var(P205, False)
+    psm.set_var(P206, False)
+    psm.set_var(MV201, True)
 
 
 def update_inputs():
     # place here your code to update inputs
-    # min 20 %
-    if psm.get_var(LIT301) <= 0.2 * ContainerMax:
-        psm.set_var(P301, False)
-        psm.set_var(P302, False)
-    # max 80 %
-    if psm.get_var(LIT301) >= 0.8 * ContainerMax:
-        # find a way to output some warning ?
-        pass
+    pass
 
 
 def update_outputs():
     # place here your code to work on outputs
-    print(f" P101 is at {psm.get_var(P301)}")
-    print(f" P102 is at {psm.get_var(P302)}")
-    print(f" ContainerCurrentVolume is {psm.get_var(LIT301)}")
+    pass
 
 
 if __name__ == "__main__":

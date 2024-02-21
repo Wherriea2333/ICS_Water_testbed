@@ -13,6 +13,7 @@ from utils import Allowed_math_type
 log = logging.getLogger('phy_sim')
 allowed_device_types = ['pump', 'valve', 'filter', 'tank', 'reservoir', 'vessel']
 
+
 class InvalidDevice(Exception):
     """Exception thrown for bad device types
     """
@@ -43,7 +44,7 @@ class Device(yaml.YAMLObject):
         if (not self.device_type) or (self.device_type not in allowed_device_types):
             raise InvalidDevice(f"{self.device_type} in not a valid device type")
 
-        log.info(f"{self}: Initialized")
+        log.info(f"{self.label}: Initialized")
 
     @classmethod
     def from_yaml(cls, loader, node):
