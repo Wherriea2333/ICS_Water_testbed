@@ -9,6 +9,8 @@ from Sensor import StateSensor, VolumeSensor, FlowRateSensor
 
 log = logging.getLogger('plc')
 
+_16BITS = 65535
+
 
 class InvalidPLC(Exception):
     """Exception thrown for bad device types
@@ -90,10 +92,15 @@ class PLC(Base_PLC):
             # if volume,flowrate -> write only
             elif type(sensor) == VolumeSensor or type(sensor) == FlowRateSensor:
                 if "QW" == sensor.location_tuple[0]:
-                    self.write_single_register(sensor.location_tuple[1], int(sensor.read_sensor()))
+                    sensor_value = int(sensor.read_sensor())
+                    if sensor.read_sensor() > _16BITS:
+                        log.error(f"{sensor.label} has a value greater than 65535, {sensor.read_sensor()}")
+                        sensor_value = _16BITS
+                    self.write_single_register(sensor.location_tuple[1], sensor_value)
                 elif "MD" == sensor.location_tuple[0]:
-                    value = sensor.read_sensor() * 10 ** self.precision
-                    if value > 65535:
-                        value /= 10
-                    self.write_single_register(1024 + sensor.location_tuple[1],
-                                               int(sensor.read_sensor() * 10 ** self.precision))
+                    sensor_value = int(sensor.read_sensor() * sensor.multiplier)
+                    if sensor.read_sensor() > _16BITS:
+                        log.error(f"{sensor.label} has a value greater than 65535, {sensor.read_sensor()}")
+                        sensor_value = _16BITS
+                    # write it to MW, as an 16 bits int -> psm code should transform it from int to real(float)
+                    self.write_single_register(1024 + sensor.location_tuple[1], sensor_value)

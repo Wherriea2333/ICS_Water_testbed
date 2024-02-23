@@ -7,10 +7,11 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 # create the docker network
-docker network insprct swat > dev/null || docker network create --subnet 172.18.0.0/16 --driver bridge swat
+sudo docker network inspect swat || sudo docker network create --subnet 172.18.0.0/16 --driver bridge swat
 
-for i in {1..6}
+for i in {11..16}
 do
-    docker run --net swat --ip 172.18.0."$i" -it --rm --privileged -p 70"$i":8080 plc"$i":oplcv3 &
+  sudo docker build -t plc"$i":oplcv3
+  sudo docker run --net swat --ip 172.18.0."$i" -d --rm --privileged -p 100"$i":8080 plc"$i":oplcv3
 done
 )

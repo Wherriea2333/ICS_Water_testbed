@@ -327,7 +327,7 @@ plcs:
   - !plc
     label: PLC1
     state: 'on'
-    host: 172.18.0.1
+    host: 172.18.0.11
     controlled_sensors_label:
       - P101
       - P102
@@ -336,13 +336,13 @@ plcs:
   - !plc
     label: PLC2
     state: 'on'
-    host: 172.18.0.2
+    host: 172.18.0.12
     controlled_sensors_label:
       - MV201
   - !plc
     label: PLC3
     state: 'on'
-    host: 172.18.0.3
+    host: 172.18.0.13
     controlled_sensors_label:
       - P301
       - P302
@@ -352,7 +352,7 @@ plcs:
   - !plc
     label: PLC4
     state: 'on'
-    host: 172.18.0.4
+    host: 172.18.0.14
     controlled_sensors_label:
       - P401
       - P402
@@ -361,7 +361,7 @@ plcs:
   - !plc
     label: PLC5
     state: 'on'
-    host: 172.18.0.5
+    host: 172.18.0.15
     controlled_sensors_label:
       - MV501
       - MV503
@@ -373,7 +373,7 @@ plcs:
   - !plc
     label: PLC6
     state: 'on'
-    host: 172.18.0.6
+    host: 172.18.0.16
     controlled_sensors_label:
       - P601
       - P603

@@ -6,14 +6,14 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 # stop container
-for i in {1..6}
+for i in {11..16}
 do
-  docker container stop plc"$i"
+  sudo docker ps | grep plc"$i":oplcv3 | awk '{ print $1 }' | xargs docker stop
 done
 # remove container
-for i in {1..6}
+for i in {11..16}
 do
-  docker container rm plc"$i"
+  sudo docker image rm plc"$i":oplcv3
 done
 # remove network
-sudo docker rm swat
+sudo docker network rm swat

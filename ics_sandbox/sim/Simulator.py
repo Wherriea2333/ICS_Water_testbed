@@ -100,8 +100,8 @@ class Simulator(object):
             plc.connect_plc()
 
         log.debug(self.devices)
-        log.debug("Wait 5 seconds to be sure the connection is established")
-        time.sleep(5)
+        log.debug("Wait 1 second to be sure the connection is established")
+        time.sleep(1)
 
         for i in range(self.max_cycle):
             for device in self.devices.values():

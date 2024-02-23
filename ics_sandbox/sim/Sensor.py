@@ -6,7 +6,6 @@ import sympy.core.evalf as sp_evalf
 import yaml
 
 log = logging.getLogger('phy_sim')
-# TODO: restrict the type of sensors
 # TODO: describe more the different label for each device in the readme
 allowed_device_types = ['flowrate', 'state', 'volume']
 
@@ -26,7 +25,6 @@ class Sensor(yaml.YAMLObject):
         self.label = label
         self.device_to_monitor_label = connected_to
         self.device_to_monitor = None
-        self.precision = 10
         self.location = location
         self.location_tuple = None
         self.active = False
@@ -104,9 +102,11 @@ class FlowRateSensor(Sensor):
     yaml_tag = u'!flowrate'
     yaml_loader = yaml.Loader
 
-    def __init__(self, **kwargs):
+    def __init__(self, sensor_type='flowrate', multiplier=1, **kwargs):
         self.flowrate = 0
-        super().__init__(**kwargs)
+        self.precision = 10
+        self.multiplier = multiplier
+        super().__init__(sensor_type=sensor_type, **kwargs)
 
     def worker(self):
         """Get the volume of `device_to_monitor`
@@ -128,8 +128,8 @@ class StateSensor(Sensor):
     yaml_tag = u'!state'
     yaml_loader = yaml.Loader
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, sensor_type='state', **kwargs):
+        super().__init__(sensor_type=sensor_type, **kwargs)
 
     def worker(self):
         pass
@@ -150,9 +150,11 @@ class VolumeSensor(Sensor):
     yaml_tag = u'!volume'
     yaml_loader = yaml.Loader
 
-    def __init__(self, **kwargs):
+    def __init__(self, sensor_type='volume', multiplier=1, **kwargs):
         self.volume = 0
-        super().__init__(**kwargs)
+        self.precision = 10
+        self.multiplier = multiplier
+        super().__init__(sensor_type=sensor_type, **kwargs)
 
     def worker(self):
         """Get the volume of `device_to_monitor`

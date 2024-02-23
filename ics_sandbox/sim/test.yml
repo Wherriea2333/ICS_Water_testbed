@@ -68,11 +68,13 @@ sensors:
   - !volume
     label: LIT101
     state: 'on'
+    multiplier: 1
     connected_to: T-101
     location: QW1
   - !volume
     label: LIT301
     state: 'on'
+    multiplier: 10
     connected_to: T-301
     location: QW1
 
@@ -80,7 +82,7 @@ plcs:
   - !plc
     label: PLC1
     state: 'on'
-    host: 172.18.0.1
+    host: 172.18.0.11
     controlled_sensors_label:
       - P101
       - P102
