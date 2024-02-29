@@ -2,7 +2,7 @@ settings:
   speed: 500
   precision: 5
   max_cycle: 0
-  host_address: "127.0.0.1"
+  host_address: "172.18.0.10"
   port: 12345
 
 devices:

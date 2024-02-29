@@ -63,23 +63,23 @@ def update_outputs():
     global client
     lit301 = client.read_holding_registers(2, 1).registers[0]
     psm.set_var(LIT301, lit301)
-    print(f"lit101:  {lit301}")
+    print(f"lit301:  {lit301}")
     if 500 <= lit301 <= 800:
-        print(f"turn on: fit -> {lit301}")
+        print(f"turn on: P301/P302 -> {lit301}")
         client.write_coil(5, True)
         client.write_coil(6, True)
         psm.set_var(P301, True)
         psm.set_var(P302, True)
     # min 20 %
     if lit301 <= 0.2 * containerMax:
-        print('LIT 101 <= 0.2 * ContainerMax')
+        print('LIT 301 <= 0.2 * ContainerMax')
         client.write_coil(5, False)
         client.write_coil(6, False)
         psm.set_var(P301, False)
         psm.set_var(P302, False)
     # max 80 %
     if lit301 >= 0.8 * containerMax:
-        print('LIT 101 >= 0.8 * ContainerMax')
+        print('LIT 301 >= 0.8 * ContainerMax')
         client.write_coil(7, False)
         psm.set_var(MV302, False)
     pass
