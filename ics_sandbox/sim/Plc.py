@@ -3,13 +3,14 @@ import uuid
 from abc import abstractmethod
 
 import yaml
-from pymodbus.client import ModbusTcpClient
+from pyModbusTCP.server import DataBank
 
 from Sensor import StateSensor, VolumeSensor, FlowRateSensor
 
 log = logging.getLogger('plc')
 
 _16BITS = 65535
+_ZERO = 0
 
 
 class InvalidPLC(Exception):
@@ -22,15 +23,13 @@ class InvalidPLC(Exception):
 
 class Base_PLC(yaml.YAMLObject):
 
-    def __init__(self, label='', state=None, host=None, port=502, controlled_sensors_label=None):
-        if host is None:
-            raise InvalidPLC(f"PLC {label} doesn't have host")
+    def __init__(self, label='', state=None, controlled_sensors_label=None):
         self.precision = 10
         self.uid = str(uuid.uuid4())[:8]
         self.label = label
         self.state = state
-        self.client = ModbusTcpClient(host, port)
         self.controlled_sensors_label = controlled_sensors_label
+        self.data_bank = None
         self.controlled_sensors = {}
 
         log.info(f"{self}: Initialized")
@@ -40,32 +39,12 @@ class Base_PLC(yaml.YAMLObject):
         fields = loader.construct_mapping(node, deep=False)
         return cls(**fields)
 
-    def connect_plc(self):
-        self.state = self.client.connect()
-        log.info(f"PLC {self.label}: Connected")
-
-    def disconnect_plc(self):
-        self.client.close()
-        self.state = False
-        log.info(f"PLC {self.label}: Disconnected")
-
-    def read_single_bit_from_coil(self, location, count):
-        rr = self.client.read_coils(location, count + 1)
-        return rr.bits[count]
-
-    def read_single_register(self, location, count):
-        rr = self.client.read_holding_registers(location, count + 1)
-        return rr.registers[count]
-
-    def write_single_bit_to_coil(self, location, value):
-        return self.client.write_coil(location, value)
-
-    def write_single_register(self, location, value):
-        return self.client.write_register(location, value)
-
     @abstractmethod
     def worker(self):
         pass
+
+    def set_data_bank(self, data_bank: DataBank):
+        self.data_bank = data_bank
 
 
 class PLC(Base_PLC):
@@ -81,26 +60,22 @@ class PLC(Base_PLC):
         for sensor in self.controlled_sensors.values():
             # if state -> read & write
             if type(sensor) == StateSensor:
-                if "QX" == sensor.location_tuple[0]:
-                    state = self.read_single_bit_from_coil(sensor.location_tuple[1], sensor.location_tuple[2])
-                    if state != sensor.device_to_monitor.active:
-                        if state:
+                if "X" == sensor.location_tuple[0]:
+                    if sensor.active and sensor.device_to_monitor.active:
+                        if self.data_bank.get_coils(sensor.location_tuple[1], 1):
                             sensor.device_to_monitor.activate()
+                            self.data_bank.set_coils(sensor.location_tuple[1], [True])
                         else:
                             sensor.device_to_monitor.deactivate()
-                        self.write_single_bit_to_coil(sensor.location_tuple[1] * 8 + sensor.location_tuple[2], state)
+                            self.data_bank.set_coils(sensor.location_tuple[1], [False])
             # if volume,flowrate -> write only
             elif type(sensor) == VolumeSensor or type(sensor) == FlowRateSensor:
-                if "QW" == sensor.location_tuple[0]:
-                    sensor_value = int(sensor.read_sensor())
-                    if sensor.read_sensor() > _16BITS:
-                        log.error(f"{sensor.label} has a value greater than 65535, {sensor.read_sensor()}")
-                        sensor_value = _16BITS
-                    self.write_single_register(sensor.location_tuple[1], sensor_value)
-                elif "MD" == sensor.location_tuple[0]:
+                if "W" == sensor.location_tuple[0]:
                     sensor_value = int(sensor.read_sensor() * sensor.multiplier)
-                    if sensor.read_sensor() > _16BITS:
-                        log.error(f"{sensor.label} has a value greater than 65535, {sensor.read_sensor()}")
+                    if sensor_value > _16BITS:
+                        log.error(f"{sensor.label} has a value greater than 65535, {sensor_value}")
                         sensor_value = _16BITS
-                    # write it to MW, as an 16 bits int -> psm code should transform it from int to real(float)
-                    self.write_single_register(1024 + sensor.location_tuple[1], sensor_value)
+                    elif sensor_value <= _ZERO:
+                        log.error(f"{sensor.label} has a negative value, {sensor_value}")
+                        sensor_value = _ZERO
+                    self.data_bank.set_holding_registers(sensor.location_tuple[1], [sensor_value])

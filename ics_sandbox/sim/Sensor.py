@@ -72,16 +72,15 @@ class Sensor(yaml.YAMLObject):
         self.device_to_monitor = device
 
     def set_location_tuple(self):
-        if "QX" in self.location:
-            qx = self.location.split("QX")
-            location = qx[1].split(".")
-            self.location_tuple = ("QX", int(location[0]), int(location[1]))
-        elif "QW" in self.location:
-            qw = self.location.split("QW")
-            self.location_tuple = ("QW", int(qw[1]))
-        elif "MD" in self.location:
-            md = self.location.split("MD")
-            self.location_tuple = ("MD", int(md[1]))
+        if "X" in self.location:
+            x = self.location.split("X")
+            self.location_tuple = (x[0], x[1],)
+        elif "W" in self.location:
+            w = self.location.split("W")
+            self.location_tuple = (w[0], w[1])
+        else:
+            log.error(f"Your sensor {self.label} has an invalid location {self.location}, "
+                      f"location should be at X for bit, or W for word")
 
     @abstractmethod
     def read_sensor(self):

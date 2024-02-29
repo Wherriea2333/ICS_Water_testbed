@@ -2,10 +2,12 @@ import signal
 import sys
 import time
 
+from pyModbusTCP.server import ModbusServer
+
 from Device import *
 from Fluid import *
-from Sensor import *
 from Plc import *
+from Sensor import *
 from utils import parse_yml, build_simulation
 
 logging.basicConfig()
@@ -77,7 +79,7 @@ class Simulator(object):
     def start(self):
         # adjust redis host to the right address
         """Start the simulation"""
-        # TODO: being adaptable
+        # TODO: being adaptable (logger)
 
         log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
         root_logger = logging.getLogger()
@@ -96,30 +98,33 @@ class Simulator(object):
         for sensor in self.sensors.values():
             sensor.activate()
 
+        my_data_bank = DataBank()
+        server = ModbusServer(self.settings['host_address'], self.settings['port'], data_bank=my_data_bank,
+                              no_block=True)
+
         for plc in self.plcs.values():
+            plc.set_data_bank(my_data_bank)
             plc.connect_plc()
 
         log.debug(self.devices)
         log.debug("Wait 1 second to be sure the connection is established")
         time.sleep(1)
 
-        for i in range(self.max_cycle):
-            for device in self.devices.values():
-                device.reset_current_flow_rate()
-            for device in self.devices.values():
-                device.worker()
-            # check all reservoir
-            self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
-                                                               self.settings['precision'])
-            for sensor in self.sensors.values():
-                sensor.worker()
-                log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
-                # r.set(sensor.device_to_monitor.label, sensor.read_sensor())
-            # read data from the redis server for each PLC
-            # apply it to make the change according to the value read from redis
-            for plc in self.plcs.values():
-                plc.worker()
-            time.sleep(int(self.settings['speed'])/1000)
+        try:
+            print("Start Modbus TCP server...")
+            server.start()
+            print("Server is online")
+            if self.max_cycle == 0:
+                while True:
+                    self.main_loop()
+            else:
+                for i in range(self.max_cycle):
+                    self.main_loop()
+                server.stop()
+        except:
+            print("Shutdown server ...")
+            server.stop()
+            print("Server is offline")
 
     def pause(self):
         """Pause the simulation"""
@@ -157,6 +162,23 @@ class Simulator(object):
             if isinstance(device, Tank):
                 self.current_tanks_volume += device.volume
 
+    def main_loop(self):
+        for device in self.devices.values():
+            device.reset_current_flow_rate()
+        for device in self.devices.values():
+            device.worker()
+        # check all reservoir
+        self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
+                                                           self.settings['precision'])
+        for sensor in self.sensors.values():
+            sensor.worker()
+            log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
+
+        for plc in self.plcs.values():
+            plc.worker()
+        time.sleep(int(self.settings['speed']) / 1000)
+
+    # TODO: change this accordingly to get the good one
     def generate_st_files(self):
         for plc in self.plcs.values():
             to_be_written = []

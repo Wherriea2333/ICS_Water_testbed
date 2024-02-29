@@ -3,6 +3,8 @@ settings:
   speed: 100
   precision: 5
   max_cycle: 10
+  host_address: "127.0.0.1"
+  port: 12345
 
 devices:
   - !reservoir
@@ -48,12 +50,12 @@ sensors:
     label: P101
     state: 'on'
     connected_to: P-101
-    location: QX0.0
+    location: X0
   - !state
     label: P102
     state: 'on'
     connected_to: P-102
-    location: QX0.1
+    location: X1
 #  - !state
 #    label: MV101
 #    connected_to: MV-101
@@ -64,19 +66,19 @@ sensors:
     label: FIT201
     state: 'on'
     connected_to: MV-201
-    location: MD1
+    location: W0
   - !volume
     label: LIT101
     state: 'on'
     multiplier: 1
     connected_to: T-101
-    location: QW1
+    location: W1
   - !volume
     label: LIT301
     state: 'on'
     multiplier: 10
     connected_to: T-301
-    location: QW1
+    location: W2
 
 plcs:
   - !plc
