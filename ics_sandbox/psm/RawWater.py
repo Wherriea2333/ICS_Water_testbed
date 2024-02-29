@@ -26,48 +26,61 @@
 # import all your libraries here
 import psm
 import time
-
-# TODO: when variable in MDx, need to read it from MWx, divide by 10**precision, then write it to MDx
+from pymodbus.client.sync import ModbusTcpClient
 
 # global variables
-P101 = "QX0.0"
-P102 = "QX0.1"
-MV101 = "QX0.2"
-FIT101 = "MD0"
-FIT201 = "MD1"
-ContainerMax = psm.get_var("QW0")
-LIT101 = "QW1"
-
+client = None
+P101 = "IX0.0"
+P102 = "IX0.1"
+MV101 = "IX0.2"
+# FIT101 = "MD0"
+FIT201 = "IW0"
+containerMax = 1000
+LIT101 = "IW1"
 
 def hardware_init():
     # Insert your hardware initialization code in here
+    global client
+    client = ModbusTcpClient('127.0.0.1', 12345)
+    print(client.connect())
+    print("connected")
     psm.start()
-    psm.set_var(P101, True)
-    psm.set_var(P102, True)
-    psm.set_var(MV101, False)
+    client.write_coil(0, False)
+    client.write_coil(1, False)
+    psm.set_var(P101, False)
+    psm.set_var(P102, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-
-    # if psm.get_var(FIT201) == 0:
-    #     psm.set_var(P101, False)
-    #     psm.set_var(P102, False)
-
-    # min 20 %
-    if psm.get_var(LIT101) <= 0.2 * ContainerMax:
-        psm.set_var(P101, False)
-        psm.set_var(P102, False)
-    # max 80 %
-    if psm.get_var(LIT101) >= 0.8 * ContainerMax:
-        psm.set_var(MV101, False)
+    pass
 
 
 def update_outputs():
     # place here your code to work on outputs
-    print(f" P101 is at {psm.get_var(P101)}")
-    print(f" P102 is at {psm.get_var(P102)}")
-    print(f" ContainerCurrentVolume is {psm.get_var(LIT101)}")
+    global client
+    lit101 = client.read_holding_registers(1, 1).registers[0]
+    psm.set_var(LIT101, lit101)
+    print(f"lit101:  {lit101}")
+    if 500 <= lit101 <= 800:
+        print(f"turn on: fit -> {lit101}")
+        client.write_coil(0, True)
+        client.write_coil(1, True)
+        psm.set_var(P101, True)
+        psm.set_var(P102, True)
+    # min 20 %
+    if lit101 <= 0.2 * containerMax:
+        print('LIT 101 <= 0.2 * ContainerMax')
+        client.write_coil(0, False)
+        client.write_coil(1, False)
+        psm.set_var(P101, False)
+        psm.set_var(P102, False)
+    # max 80 %
+    if lit101 >= 0.8 * containerMax:
+        print('LIT 101 >= 0.8 * ContainerMax')
+        client.write_coil(2, False)
+        psm.set_var(MV101, False)
+    pass
 
 
 if __name__ == "__main__":
@@ -75,5 +88,5 @@ if __name__ == "__main__":
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.1)  # You can adjust the psm cycle time here
+        time.sleep(0.5)  # You can adjust the psm cycle time here
     psm.stop()

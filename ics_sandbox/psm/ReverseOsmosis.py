@@ -23,44 +23,64 @@
 # output (%QX0.0) is true, PSM will display "QX0.0 is true" on OpenPLC's
 # dashboard. Feel free to reuse this skeleton to write whatever you want.
 
-# import all your libraries here
-import psm
 import time
 
-# global variables
-MV501 = "QX0.0"
-MV502 = "QX0.1"
-P501 = "QX0.2"
-P502 = "QX0.3"
+# import all your libraries here
+import psm
+from pymodbus.client.sync import ModbusTcpClient
 
-FIT501 = "MD0"
-FIT502 = "MD1"
-FIT503 = "MD2"
+# global variables
+MV501 = "IX1.2"
+MV503 = "IX1.3"
+P501 = "IX1.4"
+P502 = "IX1.5"
+
+FIT501 = "IW6"
+FIT502 = "IW7"
+FIT503 = "IW8"
+client = None
+
 
 def hardware_init():
     # Insert your hardware initialization code in here
+    global client
+    client = ModbusTcpClient('127.0.0.1', 12345)
+    print(client.connect())
+    print("connected")
     psm.start()
+    client.write_coil(10,True)
+    client.write_coil(11,False)
+    client.write_coil(12,False)
+    client.write_coil(13,False)
     psm.set_var(MV501, True)
-    psm.set_var(MV502, False)
+    psm.set_var(MV503, False)
     psm.set_var(P501, False)
     psm.set_var(P502, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-    # if have to work, open P501,P502,MV501
-    # else do nothing
     pass
 
 
 def update_outputs():
     # place here your code to work on outputs
+    # if have to work, open P501,P502,MV501
+    # else do nothing
+    global client
+    client.write_coil(10, True)
+    client.write_coil(12, True)
+    client.write_coil(13, True)
+    psm.set_var(P501, True)
+    psm.set_var(P502, True)
+    psm.set_var(MV501, True)
     pass
+
 
 if __name__ == "__main__":
     hardware_init()
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.1)  # You can adjust the psm cycle time here
+        time.sleep(0.5)  # You can adjust the psm cycle time here
     psm.stop()

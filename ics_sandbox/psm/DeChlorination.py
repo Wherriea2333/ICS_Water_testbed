@@ -27,41 +27,56 @@ import time
 
 # import all your libraries here
 import psm
+from pymodbus.client.sync import ModbusTcpClient
 
 # global variables
-P401 = "QX0.0"
-P402 = "QX0.1"
-LS401 = "QW0"
-LIT401 = "QW1"
-# TODO: add this max into the plc code
-ContainerMax = 1000  # psm.get_var("QW0")
-FIT401 = "MD0"
+P401 = "IX1.0"  # -> coil 8
+P402 = "IX1.1"  # -> coil 9
+LIT401 = "IW4"
+containerMax = 1000
+FIT401 = "IW5"
+client = None
 
 
 def hardware_init():
     # Insert your hardware initialization code in here
+    global client
+    client = ModbusTcpClient('127.0.0.1', 12345)
+    print(client.connect())
+    print("connected")
     psm.start()
+    client.write_coil(8, False)
+    client.write_coil(9, False)
     psm.set_var(P401, False)
     psm.set_var(P402, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-    # min 20 %
-    if psm.get_var(LIT401) <= 0.2 * ContainerMax:
-        psm.set_var(P401, False)
-        psm.set_var(P402, False)
-    # max 80 %
-    if psm.get_var(LIT401) >= 0.8 * ContainerMax:
-        # find a way to output some warning ?
-        pass
+    pass
 
 
 def update_outputs():
     # place here your code to work on outputs
-    print(f" P101 is at {psm.get_var(P401)}")
-    print(f" P102 is at {psm.get_var(P402)}")
-    print(f" ContainerCurrentVolume is {psm.get_var(LIT401)}")
+    global client
+    lit401 = client.read_holding_registers(4, 1).registers[0]
+    psm.set_var(LIT401, lit401)
+    fit401 = client.read_holding_registers(5, 1).registers[0]
+    psm.set_var(FIT401, fit401)
+    print(f"lit401:  {lit401}")
+    if lit401 >= 0.5 * containerMax:
+        print(f"turn on: P401.P402 -> {lit401}")
+        client.write_coil(8, True)
+        client.write_coil(9, True)
+        psm.set_var(P401, True)
+        psm.set_var(P402, True)
+    # min 20 %
+    elif lit401 <= 0.2 * containerMax:
+        print('LIT 101 <= 0.2 * ContainerMax')
+        client.write_coil(8, False)
+        client.write_coil(9, False)
+        psm.set_var(P401, False)
+        psm.set_var(P402, False)
 
 
 if __name__ == "__main__":
@@ -69,5 +84,5 @@ if __name__ == "__main__":
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.1)  # You can adjust the psm cycle time here
+        time.sleep(0.5)  # You can adjust the psm cycle time here
     psm.stop()

@@ -26,30 +26,20 @@
 # import all your libraries here
 import psm
 import time
-
+from pymodbus.client.sync import ModbusTcpClient
 # global variables
-P201 = "QX0.0"
-P202 = "QX0.1"
-P203 = "QX0.2"
-P204 = "QX0.3"
-P205 = "QX0.4"
-P206 = "QX0.5"
-
-MV201 = "QX0.6"
-LS201 = "QW0"
-LS202 = "QW1"
+MV201 = "IX0.4"
 
 
 def hardware_init():
     # Insert your hardware initialization code in here
+    global client
+    client = ModbusTcpClient('127.0.0.1', 12345)
+    print(client.connect())
+    print("connected")
     psm.start()
-    psm.set_var(P201, False)
-    psm.set_var(P202, False)
-    psm.set_var(P203, False)
-    psm.set_var(P204, False)
-    psm.set_var(P205, False)
-    psm.set_var(P206, False)
     psm.set_var(MV201, True)
+    client.write_coil(4, False)
 
 
 def update_inputs():
@@ -67,5 +57,5 @@ if __name__ == "__main__":
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.1)  # You can adjust the psm cycle time here
+        time.sleep(0.5)  # You can adjust the psm cycle time here
     psm.stop()

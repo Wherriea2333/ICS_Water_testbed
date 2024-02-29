@@ -104,16 +104,16 @@ class Simulator(object):
 
         for plc in self.plcs.values():
             plc.set_data_bank(my_data_bank)
-            plc.connect_plc()
-
+        # TODO: set init state of the physic simulation
         log.debug(self.devices)
-        log.debug("Wait 1 second to be sure the connection is established")
-        time.sleep(1)
 
         try:
             print("Start Modbus TCP server...")
             server.start()
             print("Server is online")
+            print("Wait 10s to let plc's to connect to the server")
+            time.sleep(10)
+
             if self.max_cycle == 0:
                 while True:
                     self.main_loop()
@@ -178,7 +178,6 @@ class Simulator(object):
             plc.worker()
         time.sleep(int(self.settings['speed']) / 1000)
 
-    # TODO: change this accordingly to get the good one
     def generate_st_files(self):
         for plc in self.plcs.values():
             to_be_written = []
@@ -187,15 +186,16 @@ class Simulator(object):
                 to_be_written.append(f"  VAR\n")
                 coil_variable_code = []
                 for sensor in plc.controlled_sensors.values():
+                    location = ""
                     data_type = None
-                    if sensor.location_tuple[0] == "QX":
+                    if sensor.location_tuple[0] == "X":
                         data_type = "BOOL"
                         coil_variable_code.append(f"  {sensor.label} := {sensor.label};\n")
-                    elif sensor.location_tuple[0] == "QW":
+                        location = "IX" + str(sensor.location_tuple[1] // 8) + "." + str(sensor.location_tuple[1] % 8)
+                    elif sensor.location_tuple[0] == "W":
                         data_type = "INT"
-                    elif sensor.location_tuple[0] == "MD":
-                        data_type = "REAL"
-                    to_be_written.append(f"    {sensor.label} AT %{sensor.location} : {data_type};\n")
+                        location = "IW" + str(sensor.location_tuple[1])
+                    to_be_written.append(f"    {sensor.label} AT %{location} : {data_type};\n")
                 to_be_written.append(f"  END_VAR\n\n")
                 to_be_written.extend(coil_variable_code)
                 to_be_written.append("END_PROGRAM\n\n\n")

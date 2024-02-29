@@ -1,5 +1,5 @@
 settings:
-  speed: 500
+  speed: 100
   precision: 5
   max_cycle: 10
   host_address: "127.0.0.1"
@@ -203,16 +203,16 @@ sensors:
     state: 'on'
     connected_to: P-102
     location: X1
-#  - !state
-#    label: MV101
-#    state: 'on'
-#    connected_to: MV-101
-#    location: X2
-#  - !flowrate
-#    label: FIT101
-#    state: 'off'
-#    connected_to: MV-101
-#    location: X3
+  - !state
+    label: MV101
+    state: 'on'
+    connected_to: MV-101
+    location: X2
+  - !flowrate
+    label: FIT101
+    state: 'off'
+    connected_to: MV-101
+    location: X3
   - !flowrate
     label: FIT201
     state: 'on'
@@ -335,6 +335,7 @@ plcs:
   - !plc
     label: PLC1
     state: 'on'
+    host: 172.18.0.11
     controlled_sensors_label:
       - P101
       - P102
@@ -343,11 +344,13 @@ plcs:
   - !plc
     label: PLC2
     state: 'on'
+    host: 172.18.0.12
     controlled_sensors_label:
       - MV201
   - !plc
     label: PLC3
     state: 'on'
+    host: 172.18.0.13
     controlled_sensors_label:
       - P301
       - P302
@@ -357,6 +360,7 @@ plcs:
   - !plc
     label: PLC4
     state: 'on'
+    host: 172.18.0.14
     controlled_sensors_label:
       - P401
       - P402
@@ -365,6 +369,7 @@ plcs:
   - !plc
     label: PLC5
     state: 'on'
+    host: 172.18.0.15
     controlled_sensors_label:
       - MV501
       - MV503
@@ -376,6 +381,7 @@ plcs:
   - !plc
     label: PLC6
     state: 'on'
+    host: 172.18.0.16
     controlled_sensors_label:
       - P601
       - P603

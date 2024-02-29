@@ -74,10 +74,10 @@ class Sensor(yaml.YAMLObject):
     def set_location_tuple(self):
         if "X" in self.location:
             x = self.location.split("X")
-            self.location_tuple = (x[0], x[1],)
+            self.location_tuple = ("X", int(x[1]))
         elif "W" in self.location:
             w = self.location.split("W")
-            self.location_tuple = (w[0], w[1])
+            self.location_tuple = ("W", int(w[1]))
         else:
             log.error(f"Your sensor {self.label} has an invalid location {self.location}, "
                       f"location should be at X for bit, or W for word")

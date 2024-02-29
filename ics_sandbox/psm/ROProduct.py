@@ -23,53 +23,70 @@
 # output (%QX0.0) is true, PSM will display "QX0.0 is true" on OpenPLC's
 # dashboard. Feel free to reuse this skeleton to write whatever you want.
 
-# import all your libraries here
-import psm
 import time
 
+# import all your libraries here
+import psm
+from pymodbus.client.sync import ModbusTcpClient
+
 # global variables
-P601 = "QX0.0"
-P603 = "QX0.1"
-# TODO : add it to ladder
+P601 = "IX1.6"
+P603 = "IX1.7"
 T601ContainerMax = 1000
 T603ContainerMax = 1000
-LS601 = "QW0"
-LS603 = "QW1"
+LS601 = "IW9"
+LS603 = "IW10"
+client = None
+
 
 def hardware_init():
     # Insert your hardware initialization code in here
+    global client
+    client = ModbusTcpClient('127.0.0.1', 12345)
+    print(client.connect())
+    print("connected")
     psm.start()
+    client.write_coil(14, False)
+    client.write_coil(15, False)
     psm.set_var(P601, False)
     psm.set_var(P603, False)
 
 
 def update_inputs():
     # place here your code to update inputs
+    pass
 
-    # if psm.get_var(FIT201) == 0:
-    #     psm.set_var(P101, False)
-    #     psm.set_var(P102, False)
-
-    # T601
-    # min 20 %
-    if psm.get_var(LS601) <= 0.2 * T601ContainerMax:
-        psm.set_var(P601, False)
-    # max 80 %
-    if psm.get_var(LS601) >= 0.8 * T601ContainerMax:
-        psm.set_var(P601, True)
-
-    # T603
-    if psm.get_var(LS603) <= 0.2 * T603ContainerMax:
-        psm.set_var(P603, False)
-    if psm.get_var(LS603) >= 0.8 * T603ContainerMax:
-        psm.set_var(P603, True)
 
 def update_outputs():
     # place here your code to work on outputs
-    print(f" P601 is at {psm.get_var(P601)}")
-    print(f" P603 is at {psm.get_var(P603)}")
-    print(f" T601 ContainerCurrentVolume is {psm.get_var(T601ContainerMax)}")
-    print(f" T603 ContainerCurrentVolume is {psm.get_var(T603ContainerMax)}")
+    global client
+    ls601 = client.read_holding_registers(9, 1).registers[0]
+    psm.set_var(LS601, ls601)
+    print(f"ls601:  {ls601}")
+    ls603 = client.read_holding_registers(10, 1).registers[0]
+    psm.set_var(LS603, ls603)
+    print(f"ls603:  {ls603}")
+    # min 20 %
+    if ls601 <= 0.2 * T601ContainerMax:
+        print(f"turn off: P601 -> {ls601}")
+        client.write_coil(14, False)
+        psm.set_var(P601, False)
+    # max 80 %
+    elif ls601 >= 0.8 * ls601:
+        print(f"turn on: P601 -> {ls601}")
+        client.write_coil(14, True)
+        psm.set_var(P601, True)
+
+    # min 20 %
+    if ls603 <= 0.2 * T603ContainerMax:
+        print(f"turn off: P601 -> {ls603}")
+        client.write_coil(15, False)
+        psm.set_var(P601, False)
+    # max 80 %
+    elif ls603 >= 0.8 * ls603:
+        print(f"turn on: P603 -> {ls603}")
+        client.write_coil(15, True)
+        psm.set_var(P601, True)
 
 
 if __name__ == "__main__":
