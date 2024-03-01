@@ -44,7 +44,7 @@ client = None
 def hardware_init():
     # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('127.0.0.1', 12345)
+    client = ModbusTcpClient('172.18.0.1', 12345)
     print(client.connect())
     print("connected")
     psm.start()

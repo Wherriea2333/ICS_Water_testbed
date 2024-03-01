@@ -75,7 +75,7 @@ class PLC(Base_PLC):
                     if sensor_value > _16BITS:
                         log.error(f"{sensor.label} has a value greater than 65535, {sensor_value}")
                         sensor_value = _16BITS
-                    elif sensor_value <= _ZERO:
+                    elif sensor_value < _ZERO:
                         log.error(f"{sensor.label} has a negative value, {sensor_value}")
                         sensor_value = _ZERO
                     self.data_bank.set_holding_registers(sensor.location_tuple[1], [sensor_value])
