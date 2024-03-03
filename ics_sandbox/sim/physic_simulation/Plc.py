@@ -23,13 +23,14 @@ class InvalidPLC(Exception):
 
 class Base_PLC(yaml.YAMLObject):
 
-    def __init__(self, label='', state=None, controlled_sensors_label=None):
+    def __init__(self, label='', connection_established_coil=65535, state=None, controlled_sensors_label=None):
         self.precision = 10
         self.uid = str(uuid.uuid4())[:8]
         self.label = label
         self.state = state
         self.controlled_sensors_label = controlled_sensors_label
         self.data_bank = None
+        self.connection_established_coil = connection_established_coil
         self.controlled_sensors = {}
 
         log.info(f"{self}: Initialized")
@@ -54,6 +55,13 @@ class PLC(Base_PLC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def check_connected(self):
+        coil_state = self.data_bank.get_coils(self.connection_established_coil, 1)
+        if coil_state is not None and coil_state[0]:
+            return True
+        else:
+            return False
+
     def worker(self):
         # each sensor read/write for himself
         # can be improved by reading a lot one time and giving to each sensor his data
@@ -62,13 +70,17 @@ class PLC(Base_PLC):
             if type(sensor) == StateSensor:
                 if "X" == sensor.location_tuple[0]:
                     if sensor.active and sensor.device_to_monitor.active:
-                        if self.data_bank.get_coils(sensor.location_tuple[1], 1):
-                            sensor.device_to_monitor.activate()
-                            self.data_bank.set_coils(sensor.location_tuple[1], [True])
+                        coil_data = self.data_bank.get_coils(sensor.location_tuple[1], 1)
+                        if coil_data is not None:
+                            if coil_data[0]:
+                                sensor.device_to_monitor.activate()
+                                self.data_bank.set_coils(sensor.location_tuple[1], [True])
+                            else:
+                                sensor.device_to_monitor.deactivate()
+                                self.data_bank.set_coils(sensor.location_tuple[1], [False])
                         else:
-                            sensor.device_to_monitor.deactivate()
-                            self.data_bank.set_coils(sensor.location_tuple[1], [False])
-            # if volume,flowrate -> write only
+                            log.error(f"Error reading coil {sensor.location}")
+            # if volume,flow_rate -> write only
             elif type(sensor) == VolumeSensor or type(sensor) == FlowRateSensor:
                 if "W" == sensor.location_tuple[0]:
                     sensor_value = int(sensor.read_sensor() * sensor.multiplier)

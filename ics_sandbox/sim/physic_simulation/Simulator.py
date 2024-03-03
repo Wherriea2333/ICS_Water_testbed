@@ -1,6 +1,7 @@
 import signal
 import sys
 import time
+import traceback
 
 from pyModbusTCP.server import ModbusServer
 
@@ -37,6 +38,20 @@ def check_reservoir_volume(devices: {}, last_volume: float, precision: int):
     return current_volume
 
 
+def set_logging():
+    # TODO: being adaptable (logger)
+    log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    root_logger = logging.getLogger()
+    file_handler = logging.FileHandler("simulator.log")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(log_formatter)
+    root_logger.addHandler(file_handler)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(log_formatter)
+    root_logger.addHandler(console_handler)
+
+
 class Simulator(object):
 
     def __init__(self, debug=0, math_parser='proportional'):
@@ -68,9 +83,9 @@ class Simulator(object):
         self.config = parse_yml(path_to_yaml_config)
         simulation = build_simulation(self.config, self.math_parser)
         self.settings = simulation['settings']
-        self.devices = simulation['devices']
-        self.sensors = simulation['sensors']
-        self.plcs = simulation['plcs']
+        self.devices: dict[str, Device] = simulation['devices']
+        self.sensors: dict[str, Sensor] = simulation['sensors']
+        self.plcs: dict[str, PLC] = simulation['plcs']
 
         self.set_precision(self.settings['precision'])
         self.max_cycle = self.settings['max_cycle']
@@ -79,40 +94,22 @@ class Simulator(object):
     def start(self):
         # adjust redis host to the right address
         """Start the simulation"""
-        # TODO: being adaptable (logger)
+        set_logging()
 
-        log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-        root_logger = logging.getLogger()
-        file_handler = logging.FileHandler("simulator.log")
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(log_formatter)
-        root_logger.addHandler(file_handler)
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.DEBUG)
-        console_handler.setFormatter(log_formatter)
-        root_logger.addHandler(console_handler)
-
-        for device in self.devices.values():
-            device.activate()
-
-        for sensor in self.sensors.values():
-            sensor.activate()
-
+        # Create data bank and modbus server
         my_data_bank = DataBank()
         server = ModbusServer(self.settings['host_address'], self.settings['port'], data_bank=my_data_bank,
                               no_block=True)
 
-        for plc in self.plcs.values():
-            plc.set_data_bank(my_data_bank)
-        # TODO: set init state of the physic simulation
-        log.debug(self.devices)
+        self.set_inner_state(my_data_bank)
+        self.set_initial_state()
 
+        # wait all PLCs are connected
+        self.wait_PLCs_connection()
         try:
-            print("Start Modbus TCP server...")
+            log.info("Start Modbus TCP server...")
             server.start()
-            print("Server is online")
-            print("Wait 10s to let plc's to connect to the server")
-            time.sleep(10)
+            log.info("Server is online")
 
             if self.max_cycle == 0:
                 while True:
@@ -121,10 +118,45 @@ class Simulator(object):
                 for i in range(self.max_cycle):
                     self.main_loop()
                 server.stop()
-        except:
-            print("Shutdown server ...")
+        except Exception as error:
+            # TODO: implement proper signal handling
+            log.info("Shutdown server ...")
             server.stop()
-            print("Server is offline")
+            log.info("Server is offline")
+            traceback.print_exc()
+
+    def wait_PLCs_connection(self):
+        for i in range(1200):
+            count = 0
+            for plc in self.plcs.values():
+                if plc.check_connected():
+                    count += 1
+                else:
+                    log.info(f"PLC {plc.label} not connected")
+            if count == len(self.plcs):
+                log.info(f"All PLCs are connected")
+                break
+            else:
+                log.info(f"Waiting 3 s")
+                time.sleep(3)
+
+    def set_inner_state(self, my_data_bank):
+        for device in self.devices.values():
+            # TODO: MAY NEED TO BE DEBUG (state not set correctly)
+            if device.read_state():
+                device.activate()
+        for sensor in self.sensors.values():
+            if sensor.read_state():
+                sensor.activate()
+        for plc in self.plcs.values():
+            plc.set_data_bank(my_data_bank)
+
+    def set_initial_state(self):
+        for sensor in self.sensors.values():
+            if sensor.active:
+                sensor.worker()
+        for plc in self.plcs.values():
+            plc.worker()
 
     def pause(self):
         """Pause the simulation"""
@@ -166,13 +198,15 @@ class Simulator(object):
         for device in self.devices.values():
             device.reset_current_flow_rate()
         for device in self.devices.values():
-            device.worker()
+            if device.active:
+                device.worker()
         # check all reservoir
         self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
                                                            self.settings['precision'])
         for sensor in self.sensors.values():
-            sensor.worker()
-            log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
+            if sensor.active:
+                sensor.worker()
+                log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
 
         for plc in self.plcs.values():
             plc.worker()

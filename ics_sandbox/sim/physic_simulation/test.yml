@@ -2,7 +2,7 @@ settings:
   speed: 500
   precision: 5
   max_cycle: 0
-  host_address: "172.18.0.10"
+  host_address: "127.0.0.1"
   port: 12345
 
 devices:
@@ -11,6 +11,7 @@ devices:
     max_volume: 1000
 #    volume: 600
     fluid: !water {}
+    self_input: "yes"
     input_per_cycle: 25
   - !pump
     label: P-101
@@ -30,11 +31,11 @@ devices:
     fluid: !water {}
   - !pump
     label: P-301
-    volume_per_cycle: 10
+    volume_per_cycle: 8
     state: 'on'
   - !pump
     label: P-302
-    volume_per_cycle: 10
+    volume_per_cycle: 8
     state: 'on'
   - !valve
     label: MV-302
@@ -49,11 +50,11 @@ devices:
     fluid: !water {}
   - !pump
     label: P-401
-    volume_per_cycle: 10
+    volume_per_cycle: 6
     state: 'on'
   - !pump
     label: P-402
-    volume_per_cycle: 10
+    volume_per_cycle: 6
     state: 'on'
   # UV dechlorinator
   - !filter
@@ -62,11 +63,11 @@ devices:
     label: Filter-501
   - !pump
     label: P-501
-    volume_per_cycle: 10
+    volume_per_cycle: 6
     state: 'on'
   - !pump
     label: P-502
-    volume_per_cycle: 10
+    volume_per_cycle: 6
     state: 'on'
   - !vessel
     label: RO-501
@@ -76,14 +77,6 @@ devices:
     label: RO-502
     volume: 0
     max_volume: 40
-  - !pump
-    label: P-501
-    volume_per_cycle: 10
-    state: 'on'
-  - !pump
-    label: P-502
-    volume_per_cycle: 10
-    state: 'on'
   - !valve
     label: MV-501
     state: 'open'
@@ -247,7 +240,7 @@ sensors:
   - !volume
     label: LIT301
     state: 'on'
-    multiplier: 10
+    multiplier: 1
     connected_to: T-301
     location: W2
   - !flowrate
@@ -335,6 +328,7 @@ plcs:
   - !plc
     label: PLC1
     state: 'on'
+    connection_established_coil: 65001
     controlled_sensors_label:
       - P101
       - P102
@@ -343,11 +337,13 @@ plcs:
   - !plc
     label: PLC2
     state: 'on'
+    connection_established_coil: 65002
     controlled_sensors_label:
       - MV201
   - !plc
     label: PLC3
     state: 'on'
+    connection_established_coil: 65003
     controlled_sensors_label:
       - P301
       - P302
@@ -357,6 +353,7 @@ plcs:
   - !plc
     label: PLC4
     state: 'on'
+    connection_established_coil: 65004
     controlled_sensors_label:
       - P401
       - P402
@@ -365,6 +362,7 @@ plcs:
   - !plc
     label: PLC5
     state: 'on'
+    connection_established_coil: 65005
     controlled_sensors_label:
       - MV501
       - MV503
@@ -376,6 +374,7 @@ plcs:
   - !plc
     label: PLC6
     state: 'on'
+    connection_established_coil: 65006
     controlled_sensors_label:
       - P601
       - P603
