@@ -35,60 +35,67 @@ P302 = "IX0.6"
 MV302 = "IX0.7"
 LIT301 = "IW2"
 FIT301 = "IW3"
-containerMax = 1000
+containerMax = 10000
 
 
 def hardware_init():
     # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    client = ModbusTcpClient('172.18.0.10', 12345)
+    print(f"connected to simulation: {client.connect()}")
+    # tell the simulation PLC connected
+    client.write_coil(65003, True)
     psm.start()
+    # set sim, plc state
     client.write_coil(5, False)
-    client.write_coil(6, False)
-    client.write_coil(7, False)
     psm.set_var(P301, False)
+    client.write_coil(6, False)
     psm.set_var(P302, False)
+    client.write_coil(7, False)
     psm.set_var(MV302, False)
 
 
 def update_inputs():
-    # place here your code to update inputs
+    global client
+    lit301 = client.read_holding_registers(5, 1).registers[0]
+    psm.set_var(LIT301, lit301)
+    print(f"lit301:  {lit301}")
+    if 0.3 * containerMax <= lit301 <= 0.8 * containerMax:
+        print(f"LIT301 {lit301} normal: Open P301, P302, MV302")
+        client.write_coil(5, True)
+        psm.set_var(P301, True)
+        client.write_coil(6, True)
+        psm.set_var(P302, True)
+        client.write_coil(7, True)
+        psm.set_var(MV302, True)
+    # min 20 %
+    elif lit301 < 0.3 * containerMax:
+        print(f"LI3101 {lit301} TOO LOW : Close P301, P302, MV302")
+        client.write_coil(5, False)
+        psm.set_var(P301, False)
+        client.write_coil(6, False)
+        psm.set_var(P302, False)
+        client.write_coil(7, True)
+        psm.set_var(MV302, True)
+    # max 80 %
+    elif lit301 > 0.8 * containerMax:
+        # TODO: define what to do when too much water
+        # write to P101,P102,MV201 to be off ?
+        print(f"LIT301 {lit301} TOO HIGH : BIG WARNING")
+        # client.write_coil(7, False)
+        # psm.set_var(MV302, False)
     pass
 
 
 def update_outputs():
     # place here your code to work on outputs
-    global client
-    lit301 = client.read_holding_registers(2, 1).registers[0]
-    psm.set_var(LIT301, lit301)
-    print(f"lit301:  {lit301}")
-    if 500 <= lit301 <= 800:
-        print(f"turn on: P301/P302 -> {lit301}")
-        client.write_coil(5, True)
-        client.write_coil(6, True)
-        psm.set_var(P301, True)
-        psm.set_var(P302, True)
-    # min 20 %
-    if lit301 <= 0.2 * containerMax:
-        print('LIT 301 <= 0.2 * ContainerMax')
-        client.write_coil(5, False)
-        client.write_coil(6, False)
-        psm.set_var(P301, False)
-        psm.set_var(P302, False)
-    # max 80 %
-    if lit301 >= 0.8 * containerMax:
-        print('LIT 301 >= 0.8 * ContainerMax')
-        client.write_coil(7, False)
-        psm.set_var(MV302, False)
     pass
 
 
 if __name__ == "__main__":
     hardware_init()
-    while (not psm.should_quit()):
+    while not psm.should_quit():
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

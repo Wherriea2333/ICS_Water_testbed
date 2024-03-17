@@ -210,7 +210,7 @@ class Simulator(object):
 
         for plc in self.plcs.values():
             plc.worker()
-        time.sleep(int(self.settings['speed']) / 1000)
+        time.sleep(int(self.settings['sim_speed']) / 1000)
 
     def generate_st_files(self):
         for plc in self.plcs.values():
@@ -218,24 +218,34 @@ class Simulator(object):
             with open(f"{plc.label}.st", "w") as f:
                 to_be_written.append(f"PROGRAM {plc.label}\n")
                 to_be_written.append(f"  VAR\n")
-                coil_variable_code = []
+                in_to_out = []
+                # set PLC's variables
                 for sensor in plc.controlled_sensors.values():
-                    location = ""
-                    data_type = None
                     if sensor.location_tuple[0] == "X":
                         data_type = "BOOL"
-                        coil_variable_code.append(f"  {sensor.label} := {sensor.label};\n")
-                        location = "IX" + str(sensor.location_tuple[1] // 8) + "." + str(sensor.location_tuple[1] % 8)
+                        input_location = "IX" + str(sensor.location_tuple[1] // 8) + "." + str(
+                            sensor.location_tuple[1] % 8)
+                        output_location = "QX" + str(sensor.location_tuple[1] // 8) + "." + str(
+                            sensor.location_tuple[1] % 8)
+                        in_to_out.append(f"  {sensor.label}_Q := {sensor.label}_I;\n")
+                        to_be_written.append(f"    {sensor.label}_Q AT %{output_location} : {data_type};\n")
+                        to_be_written.append(f"    {sensor.label}_I AT %{input_location} : {data_type};\n")
                     elif sensor.location_tuple[0] == "W":
                         data_type = "INT"
-                        location = "IW" + str(sensor.location_tuple[1])
-                    to_be_written.append(f"    {sensor.label} AT %{location} : {data_type};\n")
+                        input_location = "IW" + str(sensor.location_tuple[1])
+                        output_location = "QW" + str(sensor.location_tuple[1])
+                        in_to_out.append(f"  {sensor.label}_Q := {sensor.label}_I;\n")
+                        to_be_written.append(f"    {sensor.label}_Q AT %{output_location} : {data_type};\n")
+                        to_be_written.append(f"    {sensor.label}_I AT %{input_location} : {data_type};\n")
+
                 to_be_written.append(f"  END_VAR\n\n")
-                to_be_written.extend(coil_variable_code)
+                # Ladder code to move input to output
+                to_be_written.extend(in_to_out)
+
                 to_be_written.append("END_PROGRAM\n\n\n")
                 to_be_written.append("CONFIGURATION Config0\n\n")
                 to_be_written.append("  RESOURCE Res0 ON PLC\n")
-                to_be_written.append(f"    TASK task0(INTERVAL := T#{self.settings['speed']}ms,PRIORITY := 0);\n")
+                to_be_written.append(f"    TASK task0(INTERVAL := T#{self.settings['plc_speed']}ms,PRIORITY := 0);\n")
                 to_be_written.append(f"    PROGRAM instance0 WITH task0 : {plc.label};\n")
                 to_be_written.append("  END_RESOURCE\n")
                 to_be_written.append("END_CONFIGURATION\n")

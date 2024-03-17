@@ -32,30 +32,30 @@ MV201 = "IX0.4"
 
 
 def hardware_init():
-    # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    client = ModbusTcpClient('172.18.0.10', 12345)
+    print(f"connected to simulation: {client.connect()}")
+    # tell the simulation PLC connected
+    client.write_coil(65002, True)
     psm.start()
+    # set sim, plc state
     psm.set_var(MV201, True)
-    client.write_coil(4, False)
+    client.write_coil(4, True)
 
 
 def update_inputs():
-    # place here your code to update inputs
+    # No combination of fluid for now, nothing needed to update regularly
     pass
 
 
 def update_outputs():
-    # place here your code to work on outputs
     pass
 
 
 if __name__ == "__main__":
     hardware_init()
-    while (not psm.should_quit()):
+    while not psm.should_quit():
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

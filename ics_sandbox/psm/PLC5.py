@@ -45,35 +45,41 @@ def hardware_init():
     # Insert your hardware initialization code in here
     global client
     client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    print(f"connected to simulation: {client.connect()}")
+    # tell the simulation PLC connected
+    client.write_coil(65005, True)
     psm.start()
-    client.write_coil(10,True)
-    client.write_coil(11,False)
-    client.write_coil(12,False)
-    client.write_coil(13,False)
+    # set sim, plc state
+    client.write_coil(10, True)
     psm.set_var(MV501, True)
+    client.write_coil(11, False)
     psm.set_var(MV503, False)
+    client.write_coil(12, False)
     psm.set_var(P501, False)
+    client.write_coil(13, False)
     psm.set_var(P502, False)
 
 
 def update_inputs():
-    # place here your code to update inputs
+    global client
+    fit501 = client.read_holding_registers(6, 1).registers[0]
+    psm.set_var(FIT501, fit501)
+    print(f"Water through Filter-501:  {fit501}")
+    fit502 = client.read_holding_registers(7, 1).registers[0]
+    psm.set_var(FIT502, fit502)
+    print(f"Water through MV-501:  {fit502}")
+
+    client.write_coil(10, True)
+    psm.set_var(P501, True)
+    client.write_coil(12, True)
+    psm.set_var(P502, True)
+    client.write_coil(13, True)
+    psm.set_var(MV501, True)
+    # DO NOT TOUCH MV503 -> if open, make in infinite loop with pump
     pass
 
 
 def update_outputs():
-    # place here your code to work on outputs
-    # if have to work, open P501,P502,MV501
-    # else do nothing
-    global client
-    client.write_coil(10, True)
-    client.write_coil(12, True)
-    client.write_coil(13, True)
-    psm.set_var(P501, True)
-    psm.set_var(P502, True)
-    psm.set_var(MV501, True)
     pass
 
 

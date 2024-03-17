@@ -32,8 +32,8 @@ from pymodbus.client.sync import ModbusTcpClient
 # global variables
 P601 = "IX1.6"
 P603 = "IX1.7"
-T601ContainerMax = 1000
-T603ContainerMax = 1000
+T601ContainerMax = 10000
+T603ContainerMax = 10000
 LS601 = "IW9"
 LS603 = "IW10"
 client = None
@@ -42,23 +42,18 @@ client = None
 def hardware_init():
     # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    client = ModbusTcpClient('172.18.0.10', 12345)
+    print(f"connected to simulation: {client.connect()}")
+    client.write_coil(65006, True)
     psm.start()
     client.write_coil(14, False)
-    client.write_coil(15, False)
     psm.set_var(P601, False)
+    client.write_coil(15, False)
     psm.set_var(P603, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-    pass
-
-
-def update_outputs():
-    # place here your code to work on outputs
     global client
     ls601 = client.read_holding_registers(9, 1).registers[0]
     psm.set_var(LS601, ls601)
@@ -68,31 +63,27 @@ def update_outputs():
     print(f"ls603:  {ls603}")
     # min 20 %
     if ls601 <= 0.2 * T601ContainerMax:
-        print(f"turn off: P601 -> {ls601}")
+        print(f"LS601 {ls601} TOO LOW : Close P601")
         client.write_coil(14, False)
         psm.set_var(P601, False)
     # max 80 %
-    elif ls601 >= 0.8 * ls601:
+    elif ls601 >= 0.8 * T601ContainerMax:
+        print(f"LS601 {ls601} High enough : Open P601")
         print(f"turn on: P601 -> {ls601}")
         client.write_coil(14, True)
         psm.set_var(P601, True)
 
-    # min 20 %
-    if ls603 <= 0.2 * T603ContainerMax:
-        print(f"turn off: P601 -> {ls603}")
-        client.write_coil(15, False)
-        psm.set_var(P601, False)
-    # max 80 %
-    elif ls603 >= 0.8 * ls603:
-        print(f"turn on: P603 -> {ls603}")
-        client.write_coil(15, True)
-        psm.set_var(P601, True)
+
+
+def update_outputs():
+    # place here your code to work on outputs
+    pass
 
 
 if __name__ == "__main__":
     hardware_init()
-    while (not psm.should_quit()):
+    while not psm.should_quit():
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

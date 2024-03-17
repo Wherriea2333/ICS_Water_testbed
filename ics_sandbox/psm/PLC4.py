@@ -33,7 +33,7 @@ from pymodbus.client.sync import ModbusTcpClient
 P401 = "IX1.0"  # -> coil 8
 P402 = "IX1.1"  # -> coil 9
 LIT401 = "IW4"
-containerMax = 1000
+containerMax = 10000
 FIT401 = "IW5"
 client = None
 
@@ -42,41 +42,46 @@ def hardware_init():
     # Insert your hardware initialization code in here
     global client
     client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    print(f"connected to simulation: {client.connect()}")
+    # tell the simulation PLC connected
+    client.write_coil(65004, True)
     psm.start()
-    client.write_coil(8, False)
+    # set sim, plc state
     client.write_coil(9, False)
     psm.set_var(P401, False)
+    client.write_coil(8, False)
     psm.set_var(P402, False)
 
 
 def update_inputs():
     # place here your code to update inputs
-    pass
-
-
-def update_outputs():
-    # place here your code to work on outputs
     global client
     lit401 = client.read_holding_registers(4, 1).registers[0]
     psm.set_var(LIT401, lit401)
     fit401 = client.read_holding_registers(5, 1).registers[0]
     psm.set_var(FIT401, fit401)
-    print(f"lit401:  {lit401}")
+    print(f"FIT401:  {fit401}")
     if lit401 >= 0.5 * containerMax:
+        print(f"LIT401 {lit401} High enough : Open P401, P402")
         print(f"turn on: P401.P402 -> {lit401}")
         client.write_coil(8, True)
-        client.write_coil(9, True)
         psm.set_var(P401, True)
+        client.write_coil(9, True)
         psm.set_var(P402, True)
     # min 20 %
     elif lit401 <= 0.2 * containerMax:
-        print('LIT 101 <= 0.2 * ContainerMax')
+        print(f"LIT401 {lit401} TOO LOW : Close P401, P402")
         client.write_coil(8, False)
-        client.write_coil(9, False)
         psm.set_var(P401, False)
+        client.write_coil(9, False)
         psm.set_var(P402, False)
+    else:
+        print(f"LIT401: {lit401}")
+    pass
+
+
+def update_outputs():
+    pass
 
 
 if __name__ == "__main__":
@@ -84,5 +89,5 @@ if __name__ == "__main__":
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

@@ -15,12 +15,20 @@ sudo docker network inspect swat || sudo docker network create --subnet 172.18.0
 for i in {11..16}
 do
   sudo docker build -t plc"$i":oplcv3 .
-  sudo docker run --net swat --ip 172.18.0."$i" -d --rm --privileged -p 100"$i":8080 plc"$i":oplcv3
+  sudo docker run --net swat --ip 172.18.0."$i" -d --rm --privileged --name plc"$i" -p 100"$i":8080 plc"$i":oplcv3
 done
 )
+
+# build and run scadaBR
+(
+cd scadaBR || exit 1
+sudo docker build -t scadaBR:scadaBR .
+sudo docker run --net swat --ip 172.18.0.9 -d --rm --privileged --name scadaBR -p 10010:8080 scadaBR:scadaBR
+)
+
 #  build and run the simulator
 (
 cd sim || exit 1
 sudo docker build -t sim:sim .
-sudo docker run --net swat --ip 172.18.0.10 -d --rm --privileged sim:sim
+sudo docker run --net swat --ip 172.18.0.10 -d --rm --privileged --name sim sim:sim
 )

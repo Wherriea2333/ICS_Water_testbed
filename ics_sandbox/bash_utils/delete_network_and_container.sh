@@ -15,6 +15,9 @@ done
 # stop physical simulation
 sudo docker ps | grep sim:sim | awk '{ print $1 }' | xargs docker stop
 
+# stop scadaBR
+sudo docker ps | grep scadaBR:scadaBR | awk '{ print $1 }' | xargs docker stop
+
 # remove container
 for i in {11..16}
 do
@@ -22,6 +25,9 @@ do
 done
 # remove physical simulation container
 sudo docker image rm sim:sim --force
+
+# remove scadaBR container
+sudo docker image rm scadaBR:scadaBR --force
 
 # remove network
 sudo docker network rm swat

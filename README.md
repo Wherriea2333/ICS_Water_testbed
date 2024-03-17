@@ -64,7 +64,8 @@ Option:
 - -g (--generate) : Will generate basic ladder logic files that can be used for OpenPLC (Doesn't contain "real" logic in them)
 ## How to construct a simulation
 ### 1. Settings
-    speed: The speed at which a simulation tour is done
+    sim_speed: The speed at which a simulation tour is done
+    plc_speed: The speed at which the PLC ladder run
     precision: The number of digits of numbers
     max_cycle: The number of cycles the simulation will run
 Structure:

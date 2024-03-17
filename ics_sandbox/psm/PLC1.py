@@ -32,61 +32,68 @@ from pymodbus.client.sync import ModbusTcpClient
 client = None
 P101 = "IX0.0"
 P102 = "IX0.1"
-MV101 = "IX0.2"
+# MV101 = "IX0.2"
 # FIT101 = "MD0"
 FIT201 = "IW0"
-containerMax = 1000
+containerMax = 10000
 LIT101 = "IW1"
 
+
 def hardware_init():
-    # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('172.18.0.1', 12345)
-    print(client.connect())
-    print("connected")
+    client = ModbusTcpClient('172.18.0.10', 12345)
+    print(f"connected to simulation: {client.connect()}")
+    # tell the simulation PLC connected
+    client.write_coil(65001, True)
     psm.start()
+    # set sim, plc state
     client.write_coil(0, False)
-    client.write_coil(1, False)
     psm.set_var(P101, False)
+
+    client.write_coil(1, False)
     psm.set_var(P102, False)
 
 
 def update_inputs():
-    # place here your code to update inputs
-    pass
-
-
-def update_outputs():
-    # place here your code to work on outputs
     global client
     lit101 = client.read_holding_registers(1, 1).registers[0]
     psm.set_var(LIT101, lit101)
     print(f"lit101:  {lit101}")
-    if 500 <= lit101 <= 800:
-        print(f"turn on: fit -> {lit101}")
+
+    if 0.3 * containerMax <= lit101 <= 0.8 * containerMax:
+        print(f"LIT101 {lit101} normal: Open P101,P102")
         client.write_coil(0, True)
-        client.write_coil(1, True)
         psm.set_var(P101, True)
+        client.write_coil(1, True)
         psm.set_var(P102, True)
-    # min 20 %
-    if lit101 <= 0.2 * containerMax:
-        print('LIT 101 <= 0.2 * ContainerMax')
+    elif lit101 < 0.3 * containerMax:
+        print(f"LIT101 {lit101} TOO LOW : Close P101,P102")
         client.write_coil(0, False)
         client.write_coil(1, False)
         psm.set_var(P101, False)
         psm.set_var(P102, False)
     # max 80 %
-    if lit101 >= 0.8 * containerMax:
-        print('LIT 101 >= 0.8 * ContainerMax')
-        client.write_coil(2, False)
-        psm.set_var(MV101, False)
+    elif lit101 > 0.8 * containerMax:
+        # TODO: control reservoir input per cycle
+        print(f"LIT101 {lit101} TOO HIGH : Close MV101")
+        # client.write_coil(2, False)
+        # psm.set_var(MV101, False)
+
+    # set flowrate
+    fit201 = client.read_holding_registers(0, 1).registers[0]
+    psm.set_var(FIT201, fit201)
+    print(f"fit201:  {lit101}")
+    pass
+
+
+def update_outputs():
     pass
 
 
 if __name__ == "__main__":
     hardware_init()
-    while (not psm.should_quit()):
+    while not psm.should_quit():
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

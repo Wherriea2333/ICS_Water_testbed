@@ -1,32 +1,33 @@
 settings:
-  speed: 500
+  sim_speed: 500
+  plc_speed: 20
   precision: 5
   max_cycle: 0
-  host_address: "127.0.0.1"
+  host_address: "172.18.0.10"
   port: 12345
 
 devices:
   - !reservoir
     label: T-101
-    max_volume: 1000
-#    volume: 600
+    max_volume: 10000
+    volume: 1000
     fluid: !water {}
     self_input: "yes"
-    input_per_cycle: 25
+    input_per_cycle: 20
   - !pump
     label: P-101
     volume_per_cycle: 10
-    state: 'on'
+    state: 'off'
   - !pump
     label: P-102
     volume_per_cycle: 10
-    state: 'on'
+    state: 'off'
   - !valve
     label: MV-201
     state: 'open'
   - !reservoir
     label: T-301
-    max_volume: 1000
+    max_volume: 10000
     volume: 0
     fluid: !water {}
   - !pump
@@ -45,7 +46,7 @@ devices:
     label: UF-301
   - !reservoir
     label: T-401
-    max_volume: 1000
+    max_volume: 10000
     volume: 0
     fluid: !water {}
   - !pump
@@ -85,12 +86,12 @@ devices:
     state: 'closed'
   - !reservoir
     label: T-601
-    max_volume: 1000
+    max_volume: 10000
     volume: 0
     fluid: !water {}
   - !reservoir
     label: T-603
-    max_volume: 1000
+    max_volume: 10000
     volume: 0
     fluid: !water {}
   - !pump
