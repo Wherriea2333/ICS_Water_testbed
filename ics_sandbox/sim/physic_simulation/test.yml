@@ -33,11 +33,11 @@ devices:
   - !pump
     label: P-301
     volume_per_cycle: 8
-    state: 'on'
+    state: 'off'
   - !pump
     label: P-302
     volume_per_cycle: 8
-    state: 'on'
+    state: 'off'
   - !valve
     label: MV-302
     state: 'open'

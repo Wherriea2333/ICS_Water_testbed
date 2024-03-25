@@ -69,11 +69,11 @@ def update_inputs():
     psm.set_var(FIT502, fit502)
     print(f"Water through MV-501:  {fit502}")
 
-    client.write_coil(10, True)
-    psm.set_var(P501, True)
     client.write_coil(12, True)
-    psm.set_var(P502, True)
+    psm.set_var(P501, True)
     client.write_coil(13, True)
+    psm.set_var(P502, True)
+    client.write_coil(10, True)
     psm.set_var(MV501, True)
     # DO NOT TOUCH MV503 -> if open, make in infinite loop with pump
     pass
@@ -88,5 +88,5 @@ if __name__ == "__main__":
     while (not psm.should_quit()):
         update_inputs()
         update_outputs()
-        time.sleep(0.5)  # You can adjust the psm cycle time here
+        time.sleep(0.2)  # You can adjust the psm cycle time here
     psm.stop()

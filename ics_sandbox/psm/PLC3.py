@@ -75,8 +75,8 @@ def update_inputs():
         psm.set_var(P301, False)
         client.write_coil(6, False)
         psm.set_var(P302, False)
-        client.write_coil(7, True)
-        psm.set_var(MV302, True)
+        client.write_coil(7, False)
+        psm.set_var(MV302, False)
     # max 80 %
     elif lit301 > 0.8 * containerMax:
         # TODO: define what to do when too much water

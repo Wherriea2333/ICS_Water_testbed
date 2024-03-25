@@ -97,15 +97,11 @@ class Device(yaml.YAMLObject):
             self.active = False
         log.info(f"{self.label}: Inactive")
 
+    def read_activity(self):
+        return self.active
+
     def read_state(self):
         return self.state
-
-    def write_state(self, state=None):
-        """ Set the devices state"""
-        if state is not None:
-            self.state = state
-            return True
-        return False
 
     @abstractmethod
     def worker(self):
