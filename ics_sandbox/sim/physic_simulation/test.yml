@@ -206,7 +206,7 @@ sensors:
 #    label: FIT101
 #    state: 'off'
 #    connected_to: MV-101
-#    location: X3
+#    location: W ????
   - !flowrate
     label: FIT201
     state: 'on'

@@ -46,10 +46,6 @@ def set_logging():
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(log_formatter)
     root_logger.addHandler(file_handler)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)
 
 
 class Simulator(object):
@@ -104,13 +100,13 @@ class Simulator(object):
         self.set_inner_state(my_data_bank)
         self.set_initial_state()
 
-        # wait all PLCs are connected
-        self.wait_PLCs_connection()
         try:
             log.info("Start Modbus TCP server...")
             server.start()
             log.info("Server is online")
 
+            # wait all PLCs are connected
+            self.wait_PLCs_connection()
             if self.max_cycle == 0:
                 while True:
                     self.main_loop()

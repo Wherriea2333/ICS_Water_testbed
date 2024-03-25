@@ -21,7 +21,7 @@ done
 
 # build and run scadaBR
 (
-cd scadaBR || exit 1
+cd scadabr || exit 1
 sudo docker build -t scadaBR:scadaBR .
 sudo docker run --net swat --ip 172.18.0.9 -d --rm --privileged --name scadaBR -p 10010:8080 scadaBR:scadaBR
 )
@@ -32,3 +32,6 @@ cd sim || exit 1
 sudo docker build -t sim:sim .
 sudo docker run --net swat --ip 172.18.0.10 -d --rm --privileged --name sim sim:sim
 )
+
+
+# TODO:  may be able to add image to path, so that there is more choice -> /opt/tomcat6/apache-tomcat-6.0.53/webapps/ScadaBR/graphics/

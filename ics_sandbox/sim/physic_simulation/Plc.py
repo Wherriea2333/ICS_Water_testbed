@@ -7,7 +7,9 @@ from pyModbusTCP.server import DataBank
 
 from Sensor import StateSensor, VolumeSensor, FlowRateSensor
 
-log = logging.getLogger('plc')
+logging.basicConfig()
+log = logging.getLogger('phy_sim')
+log.setLevel(logging.WARN)
 
 _16BITS = 65535
 _ZERO = 0
@@ -69,8 +71,9 @@ class PLC(Base_PLC):
             # if state -> read & write
             if type(sensor) == StateSensor:
                 if "X" == sensor.location_tuple[0]:
-                    if sensor.active and sensor.device_to_monitor.active:
+                    if sensor.active:
                         coil_data = self.data_bank.get_coils(sensor.location_tuple[1], 1)
+                        log.debug(f"coil data X{sensor.location_tuple[1]}: {coil_data}")
                         if coil_data is not None:
                             if coil_data[0]:
                                 sensor.device_to_monitor.activate()

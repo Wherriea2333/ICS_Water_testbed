@@ -82,7 +82,7 @@ def update_inputs():
     # set flowrate
     fit201 = client.read_holding_registers(0, 1).registers[0]
     psm.set_var(FIT201, fit201)
-    print(f"fit201:  {lit101}")
+    print(f"fit201:  {fit201}")
     pass
 
 

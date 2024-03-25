@@ -41,7 +41,7 @@ client = None
 def hardware_init():
     # Insert your hardware initialization code in here
     global client
-    client = ModbusTcpClient('172.18.0.1', 12345)
+    client = ModbusTcpClient('172.18.0.10', 12345)
     print(f"connected to simulation: {client.connect()}")
     # tell the simulation PLC connected
     client.write_coil(65004, True)
