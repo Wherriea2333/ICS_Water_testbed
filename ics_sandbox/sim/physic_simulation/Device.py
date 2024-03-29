@@ -97,11 +97,15 @@ class Device(yaml.YAMLObject):
             self.active = False
         log.info(f"{self.label}: Inactive")
 
-    def read_activity(self):
-        return self.active
-
     def read_state(self):
         return self.state
+
+    def write_state(self, state=None):
+        """ Set the devices state"""
+        if state is not None:
+            self.state = state
+            return True
+        return False
 
     @abstractmethod
     def worker(self):
@@ -133,6 +137,7 @@ class Device(yaml.YAMLObject):
                     open_device_number += 1
             # When no tank can take the input of fluid
             if open_device_number == 0:
+                log.error(f"device {self} has no device to output fluid")
                 return 0
             for o in self.output_devices:
                 # Send the fluid on to all outputs equally
@@ -163,6 +168,10 @@ class Device(yaml.YAMLObject):
             for o in self.input_devices:
                 if self.input_devices[o].state or self.input_devices[o].state is None:
                     open_device_number += 1
+            # When no tank can take the input of fluid
+            if open_device_number == 0:
+                log.error(f"device {self} has no device to get input fluid")
+                return 0
             for o in self.input_devices:
                 # Request the fluid from all inputs devices equally
                 # log.debug(
@@ -293,7 +302,7 @@ class Tank(Device):
     yaml_tag = u'!tank'
     yaml_loader = yaml.Loader
 
-    def __init__(self, volume=0, max_volume=float('inf'), device_type='tank', state=False, **kwargs):
+    def __init__(self, volume=0, max_volume=float('inf'), device_type='tank', state=True, **kwargs):
         self.volume = volume
         self.max_volume = max_volume
         super(Tank, self).__init__(device_type=device_type, state=state, **kwargs)
@@ -362,16 +371,17 @@ class Tank(Device):
 
 
 class Reservoir(Tank):
+    #TODO: fix the issue for self input
     yaml_tag = u'!reservoir'
     yaml_loader = yaml.Loader
 
     def __init__(self, device_type='reservoir', input_per_cycle=0, self_input="no", **kwargs):
         self.input_per_cycle = input_per_cycle
-        if type(self_input) == bool:
-            _inputs = self_input
-        else:
-            _inputs = bool(['no', 'yes'].index(self_input))
-        super(Reservoir, self).__init__(device_type=device_type, state=_inputs, **kwargs)
+        # if type(self_input) == bool:
+        #     _inputs = self_input
+        # else:
+        #     _inputs = bool(['no', 'yes'].index(self_input))
+        super(Reservoir, self).__init__(device_type=device_type, state=True, **kwargs)
 
     def worker(self):
         """Make sure that we don't run dry.

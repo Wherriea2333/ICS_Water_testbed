@@ -94,3 +94,4 @@ class PLC(Base_PLC):
                         log.error(f"{sensor.label} has a negative value, {sensor_value}")
                         sensor_value = _ZERO
                     self.data_bank.set_holding_registers(sensor.location_tuple[1], [sensor_value])
+                    log.debug(f"{sensor.label} at location {sensor.location} has a value of {sensor_value}")

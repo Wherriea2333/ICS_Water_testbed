@@ -136,12 +136,13 @@ class StateSensor(Sensor):
     def read_sensor(self):
         """ Report device state
         """
-        return self.device_to_monitor.read_activity()
+        return self.device_to_monitor.read_state()
 
     def write_sensor(self, state=None):
         """ set device state
         """
         if state is not None:
+            self.device_to_monitor.write_state(state)
             if state:
                 self.device_to_monitor.activate()
             else:

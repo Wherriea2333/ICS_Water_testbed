@@ -113,7 +113,7 @@ class Simulator(object):
             else:
                 for i in range(self.max_cycle):
                     self.main_loop()
-                server.stop()
+            server.stop()
         except Exception as error:
             # TODO: implement proper signal handling
             log.info("Shutdown server ...")
@@ -194,15 +194,12 @@ class Simulator(object):
         for device in self.devices.values():
             device.reset_current_flow_rate()
         for device in self.devices.values():
-            if device.read_activity():
-                device.worker()
+            device.worker()
         # check all reservoir
         self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
                                                            self.settings['precision'])
         for sensor in self.sensors.values():
-            if sensor.active:
-                sensor.worker()
-                log.debug(f"Device: {sensor.device_to_monitor.label} sensor value: {sensor.read_sensor()}")
+            sensor.worker()
 
         for plc in self.plcs.values():
             plc.worker()
