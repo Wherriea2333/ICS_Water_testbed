@@ -22,8 +22,8 @@ done
 # build and run scadaBR
 (
 cd scadabr || exit 1
-sudo docker build -t scadaBR:scadaBR .
-sudo docker run --net swat --ip 172.18.0.9 -d --rm --privileged --name scadaBR -p 10010:8080 scadaBR:scadaBR
+sudo docker build -t scadabr:scadabr .
+sudo docker run --net swat --ip 172.18.0.9 -d --rm --privileged --name scadabr -p 10010:8080 scadabr:scadabr
 )
 
 #  build and run the simulator

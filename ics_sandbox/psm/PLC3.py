@@ -57,8 +57,10 @@ def hardware_init():
 
 def update_inputs():
     global client
-    lit301 = client.read_holding_registers(5, 1).registers[0]
+    lit301 = client.read_holding_registers(2, 1).registers[0]
     psm.set_var(LIT301, lit301)
+    fit301 = client.read_holding_registers(3, 1).registers[0]
+    psm.set_var(FIT301, fit301)
     print(f"lit301:  {lit301}")
     if 0.3 * containerMax <= lit301 <= 0.8 * containerMax:
         print(f"LIT301 {lit301} normal: Open P301, P302, MV302")

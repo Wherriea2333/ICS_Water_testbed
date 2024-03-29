@@ -194,7 +194,8 @@ class Simulator(object):
         for device in self.devices.values():
             device.reset_current_flow_rate()
         for device in self.devices.values():
-            device.worker()
+            if device.active:
+                device.worker()
         # check all reservoir
         self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
                                                            self.settings['precision'])

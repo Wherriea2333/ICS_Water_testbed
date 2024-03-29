@@ -1,5 +1,29 @@
 {
    "graphicalViews":[
+      {
+         "user":"admin",
+         "anonymousAccess":"NONE",
+         "viewComponents":[
+            {
+               "type":"ANALOG_GRAPHIC",
+               "dataPointXid":"DP_824477",
+               "imageSet":"Tank",
+               "bkgdColorOverride":"",
+               "displayControls":false,
+               "displayText":false,
+               "max":10000.0,
+               "min":0.0,
+               "nameOverride":"",
+               "settableOverride":false,
+               "x":38,
+               "y":137
+            }
+         ],
+         "sharingUsers":[
+         ],
+         "name":"SWAT_water_treatment",
+         "xid":"GV_295420"
+      }
    ],
    "dataSources":[
       {
@@ -14,7 +38,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.11",
          "name":"plc1",
@@ -36,7 +60,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.12",
          "name":"plc2",
@@ -58,7 +82,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.13",
          "name":"plc3",
@@ -80,7 +104,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.14",
          "name":"plc4",
@@ -102,7 +126,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.15",
          "name":"plc5",
@@ -124,7 +148,7 @@
          "transportType":"TCP_KEEP_ALIVE",
          "contiguousBatches":false,
          "createSlaveMonitorPoints":false,
-         "enabled":false,
+         "enabled":true,
          "encapsulated":false,
          "host":"172.18.0.16",
          "name":"plc6",
@@ -164,7 +188,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P101_state",
          "purgePeriod":1,
@@ -202,7 +226,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P102_state",
          "purgePeriod":1,
@@ -240,7 +264,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"FIT201",
          "purgePeriod":1,
@@ -278,7 +302,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"LIT101",
          "purgePeriod":1,
@@ -316,7 +340,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"MV201",
          "purgePeriod":1,
@@ -354,7 +378,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P301",
          "purgePeriod":1,
@@ -392,7 +416,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P302",
          "purgePeriod":1,
@@ -430,7 +454,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"MV302",
          "purgePeriod":1,
@@ -468,7 +492,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"LIT301",
          "purgePeriod":1,
@@ -506,7 +530,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"FIT301",
          "purgePeriod":1,
@@ -544,7 +568,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P401",
          "purgePeriod":1,
@@ -582,7 +606,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P402",
          "purgePeriod":1,
@@ -620,7 +644,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"FIT401",
          "purgePeriod":1,
@@ -658,7 +682,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"LIT401",
          "purgePeriod":1,
@@ -696,7 +720,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"MV501",
          "purgePeriod":1,
@@ -734,7 +758,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P501",
          "purgePeriod":1,
@@ -772,7 +796,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P502",
          "purgePeriod":1,
@@ -810,7 +834,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"FIT501",
          "purgePeriod":1,
@@ -848,7 +872,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"FIT502",
          "purgePeriod":1,
@@ -886,7 +910,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P601",
          "purgePeriod":1,
@@ -924,7 +948,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"P603",
          "purgePeriod":1,
@@ -962,7 +986,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"LS601",
          "purgePeriod":1,
@@ -1000,7 +1024,7 @@
          "discardExtremeValues":false,
          "discardHighLimit":1.7976931348623157E308,
          "discardLowLimit":-1.7976931348623157E308,
-         "enabled":false,
+         "enabled":true,
          "intervalLoggingPeriod":15,
          "name":"LS603",
          "purgePeriod":1,
@@ -1018,12 +1042,87 @@
    "pointLinks":[
    ],
    "users":[
+      {
+         "admin":true,
+         "disabled":false,
+         "email":"admin@yourMangoDomain.com",
+         "homeUrl":null,
+         "password":"0DPiKuNIrrVmD8IUCuw1hQxNqZc=",
+         "phone":"",
+         "receiveOwnAuditEvents":false,
+         "username":"admin"
+      }
    ],
    "mailingLists":[
    ],
    "publishers":[
    ],
    "pointHierarchy":[
+      {
+         "points":[
+            "DP_824477",
+            "DP_093991",
+            "DP_824031"
+         ],
+         "name":"PLC1",
+         "subfolders":[
+         ]
+      },
+      {
+         "points":[
+            "DP_104085",
+            "DP_011110"
+         ],
+         "name":"PLC2",
+         "subfolders":[
+         ]
+      },
+      {
+         "points":[
+            "DP_139124",
+            "DP_056496",
+            "DP_701276",
+            "DP_469961",
+            "DP_748643"
+         ],
+         "name":"PLC3",
+         "subfolders":[
+         ]
+      },
+      {
+         "points":[
+            "DP_067661",
+            "DP_977397",
+            "DP_351869",
+            "DP_523795"
+         ],
+         "name":"PLC4",
+         "subfolders":[
+         ]
+      },
+      {
+         "points":[
+            "DP_750099",
+            "DP_453241",
+            "DP_345841",
+            "DP_081535",
+            "DP_385389"
+         ],
+         "name":"PLC5",
+         "subfolders":[
+         ]
+      },
+      {
+         "points":[
+            "DP_258381",
+            "DP_045078",
+            "DP_671292",
+            "DP_656366"
+         ],
+         "name":"PLC6",
+         "subfolders":[
+         ]
+      }
    ],
    "eventHandlers":[
    ],
