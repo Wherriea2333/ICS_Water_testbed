@@ -25,6 +25,8 @@ def foo():
 
 
 def check_reservoir_volume(devices: {}, last_volume: float, precision: int):
+    """Check that the volume of fluid in the system correspond to
+    the last cycle + the amount of fluid added in the current cycle to the system"""
     current_volume = 0
     for device in devices.values():
         if isinstance(device, Tank):
@@ -49,6 +51,7 @@ def set_logging():
 
 
 class Simulator(object):
+    """Main class which control all the simulation"""
 
     def __init__(self, debug=0, math_parser='proportional'):
         signal.signal(signal.SIGINT, self.sig_handler)
@@ -88,7 +91,6 @@ class Simulator(object):
         self.set_current_tanks_volume()
 
     def start(self):
-        # adjust redis host to the right address
         """Start the simulation"""
         set_logging()
 
@@ -122,6 +124,7 @@ class Simulator(object):
             traceback.print_exc()
 
     def wait_PLCs_connection(self):
+        """Wait until all PLCs are connected before starting the simulation"""
         for i in range(1200):
             count = 0
             for plc in self.plcs.values():
@@ -137,8 +140,8 @@ class Simulator(object):
                 time.sleep(3)
 
     def set_inner_state(self, my_data_bank):
+        """Set initial state of the modbus data bank with initial state given by the yaml config file"""
         for device in self.devices.values():
-            # TODO: MAY NEED TO BE DEBUG (state not set correctly)
             if device.read_state():
                 device.activate()
         for sensor in self.sensors.values():
@@ -148,6 +151,7 @@ class Simulator(object):
             plc.set_data_bank(my_data_bank)
 
     def set_initial_state(self):
+        """Set initial state of sensors and PLCs"""
         for sensor in self.sensors.values():
             if sensor.active:
                 sensor.worker()
@@ -155,7 +159,9 @@ class Simulator(object):
             plc.worker()
 
     def pause(self):
+        # TODO: handle sigint to pause the simulation
         """Pause the simulation"""
+
         for device in self.devices.values():
             device.deactivate()
 
@@ -163,18 +169,20 @@ class Simulator(object):
             sensor.deactivate()
 
     def stop(self):
+        # TODO: handle sigint to stop the simulation
         """Stop and destroy the simulation"""
         self.pause()
         sys.exit(0)
 
     def restart(self):
+        # TODO: handle sigint to restart the simulation
         """Stop and reload the simulation from the original config"""
         self.pause()
         self.load_yml(self.path_to_yaml_config)
         self.start()
 
     def set_precision(self, precision):
-        """set the number of output digits of devices, sensors, plc"""
+        """Set the number of output digits of devices, sensors, plc"""
         for device in self.devices.values():
             device.precision = precision
 
@@ -185,12 +193,15 @@ class Simulator(object):
             plc.precision = precision
 
     def set_current_tanks_volume(self):
-        """get the initial volume of fluid in tanks"""
+        """Get the initial volume of fluid in tanks"""
         for device in self.devices.values():
             if isinstance(device, Tank):
                 self.current_tanks_volume += device.volume
 
     def main_loop(self):
+        """Main loop of the simulation, reset flow rate to 0, make all active device worker work,
+        check simulation volume is correct, sensors update read data,PLC get data from sensors and put them in data bank
+         and also update sensor state(which will in their turn update device state)"""
         for device in self.devices.values():
             device.reset_current_flow_rate()
         for device in self.devices.values():
@@ -207,6 +218,7 @@ class Simulator(object):
         time.sleep(int(self.settings['sim_speed']) / 1000)
 
     def generate_st_files(self):
+        """Function to generate basic ladder logic which just move input to output"""
         for plc in self.plcs.values():
             to_be_written = []
             with open(f"{plc.label}.st", "w") as f:

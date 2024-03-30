@@ -24,6 +24,7 @@ class InvalidPLC(Exception):
 
 
 class Base_PLC(yaml.YAMLObject):
+    """Abstract PLC"""
 
     def __init__(self, label='', connection_established_coil=65535, state=None, controlled_sensors_label=None):
         self.precision = 10
@@ -39,14 +40,17 @@ class Base_PLC(yaml.YAMLObject):
 
     @classmethod
     def from_yaml(cls, loader, node):
+        """Method to load python object from yml file"""
         fields = loader.construct_mapping(node, deep=False)
         return cls(**fields)
 
     @abstractmethod
     def worker(self):
+        """Override this function to make the PLC do something at `worker_frequency` rate"""
         pass
 
     def set_data_bank(self, data_bank: DataBank):
+        """Set the databank"""
         self.data_bank = data_bank
 
 
@@ -58,6 +62,7 @@ class PLC(Base_PLC):
         super().__init__(**kwargs)
 
     def check_connected(self):
+        """Verify that all OpenPLC plcs are connected to the server"""
         coil_state = self.data_bank.get_coils(self.connection_established_coil, 1)
         if coil_state is not None and coil_state[0]:
             return True
@@ -65,6 +70,10 @@ class PLC(Base_PLC):
             return False
 
     def worker(self):
+        """
+        Read data from data bank, and update sensors/device if needed
+        Update data bank according to the sensors data
+        """
         # each sensor read/write for himself
         # can be improved by reading a lot one time and giving to each sensor his data
         for sensor in self.controlled_sensors.values():

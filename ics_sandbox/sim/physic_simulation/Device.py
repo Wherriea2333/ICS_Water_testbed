@@ -130,6 +130,11 @@ class Device(yaml.YAMLObject):
         return 0
 
     def input_fluid(self, fluid, volume):
+        """
+        Generic input fluid function:
+        proportional: determine the number of output devices, then call each device with the same amount of volume
+        sympy/wolfram: decided by the yaml configuration
+        """
         if self.math_parser == Allowed_math_type.proportional.value:
             open_device_number = 0
             for o in self.output_devices:
@@ -163,6 +168,11 @@ class Device(yaml.YAMLObject):
                         .input(fluid, sp_evalf.N(mp.mathematica(expr).subs(self.symbol_dict), self.precision))
 
     def output_fluid(self, volume):
+        """
+        Generic output fluid function:
+        proportional: determine the number of input devices, then call each device with the same amount of volume
+        sympy/wolfram: decided by the yaml configuration
+        """
         if self.math_parser == Allowed_math_type.proportional.value:
             open_device_number = 0
             for o in self.input_devices:

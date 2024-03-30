@@ -7,6 +7,8 @@ import yaml
 log = logging.getLogger('phy_sim')
 
 
+# TODO: multiple fluids not implemented correctly, especially in device part !
+
 class InvalidFluid(Exception):
     """Exception handler for bad fluid types
     """
@@ -33,14 +35,15 @@ class Fluid(yaml.YAMLObject):
             raise InvalidFluid(f"'{flow_rate}' in not a valid fluid type")
 
     def __repr__(self):
-        return f"{self.uid} {self.fluid_type} " \
-               f"pH: {self.ph} " \
-               f"Salinity: {self.salinity}" \
-               f" Pressure: {self.pressure} " \
-               f"FlowRate: {self.flow_rate}"
+        return f"{self.uid} {self.fluid_type} "
+        # f"pH: {self.ph} " \
+        # f"Salinity: {self.salinity}" \
+        # f" Pressure: {self.pressure} " \
+        # f"FlowRate: {self.flow_rate}"
 
     @classmethod
     def from_yaml(cls, loader, node):
+        """Method to load python object from yml file"""
         fields = loader.construct_mapping(node, deep=False)
         return cls(**fields)
 
