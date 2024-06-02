@@ -11,7 +11,7 @@
 1. Install [docker](https://docs.docker.com/engine/install/)
 2. Clone the repository
 3. cd to `ICS_Water_test/ics_sandbox`, under this folder, there should be a main.py
-4. Adjust the test.yml config file if needed, you may also need to change the deployment scripts of the PLC's is you change PLC address.
+4. Adjust the test.yml config file if needed, you may also need to change the deployment scripts of the PLC's if you change PLC address.
 5. Launch the python file `sudo python3 main.py`
 ```Tree
 ├── ICS_Water_testbed
@@ -29,6 +29,7 @@
 │   ├── VagrantFile
 ├── scadaBR_conf
 │   ├── scadaBR_conf.json
+│   ├── scada_LTS_conf.json
 ├── LICENSE
 ├── README.md
 └── .gitignore
@@ -64,8 +65,8 @@ Option:
 - -g (--generate) : Will generate basic ladder logic files that can be used for OpenPLC (These ladder program just transfer the input to output)
 ## How to construct a simulation
 ### 1. Settings
-    sim_speed: sleeping time between simulation cycle
-    plc_speed: The speed at which the PLC ladder run
+    sim_speed: Sleeping time between simulation cycle in milliseconds
+    plc_speed: When generating PLC ladder logic, the maximum time of a PLC ladder logic loop
     precision: The number of digits of numbers
     max_cycle: The number of cycles the simulation will run, if 0, it will run infinitely
     host_address: ip of the physic simulation, default is "172.18.0.10"
@@ -96,10 +97,25 @@ Structure :
 ```yaml
 devices:
   - !reservoir
-    label: reservoir1
+    label: T-101
+    max_volume: 10000
+    volume: 1000
     fluid: !water {}
+    self_input: 'yes'
+    input_per_cycle: 20
   - !pump
-    label: pump1
+    label: P-101
+    volume_per_cycle: 10
+    state: 'on'
+  - !valve
+    label: MV-201
+    state: 'open'
+  - !vessel
+    label: RO-501
+    volume: 0
+    max_volume: 40
+  - !filter
+    label: Filter-501
 ```
 ### 3. Connections
 Add connections between devices, each device can have multiples input and output devices
@@ -110,24 +126,44 @@ If you use `-m` in 'sympy' mode or 'wolfram' mode, you can write a mathematical 
 It is preferable to not mixes the two.
 
 
-**Devices label are automatically added, you can also access to these devices attributes by `label.attr`**
+**Devices label are automatically added, you can also access to these devices attributes by `label.attribute`**
+
+Some extra variables like `requested_volume` and `open_output_devices_number` are available in output_devices_expr. 
+Similarly, `accepted_volume` and `open_input_devices_number` are available in input_devices_expr
 
 Structure:
 ```yaml
 connections:
   reservoir1:
     outputs:
+      - valve1
+  valve1:
+    outputs:
       - pump1
       - pump2
+    input_devices_expr:
+      reservoir1: "requested_volume"
     output_devices_expr:
-      pump1: 2 * pump1.volume_per_cycle / 3 + x
-      pump2: 2 * pump2.volume_per_cycle / 3 + x
+      pump1: 2 * "accepted_volume" / 3 + x
+      pump2: 2 * "accepted_volume" / 3 + x
   pump1:
     outputs:
-      - tank
+      - tank1
+    input_devices_expr:
+      valve1: pump1.volume_per_cycle
+    output_devices_expr:
+      tank: "accepted_volume"
   pump2:
     outputs:
-      - tank
+      - tank1
+    input_devices_expr:
+      valve1: pump2.volume_per_cycle
+    output_devices_expr:
+      tank: "accepted_volume"
+  tank1:
+    input_devices_expr:
+      pump1: "accepted_volume"
+      pump2: "accepted_volume"
 ```
 ### 4. Symbols
 **Devices label are automatically added, you can also access to these devices attributes by `label.attr`**
@@ -154,12 +190,17 @@ sensors:
     label: P101
     state: 'on'
     connected_to: P-101
-    location: X0
+    location: W0
   - !flowrate
     label: P102
     state: 'on'
     connected_to: P-102
-    location: X1
+    location: W1
+  - !state
+    label: MV101
+    state: 'on'
+    connected_to: MV-101
+    location: X0
 ```
 
 ### 6. PLCs

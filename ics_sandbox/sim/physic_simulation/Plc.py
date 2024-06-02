@@ -27,6 +27,13 @@ class Base_PLC(yaml.YAMLObject):
     """Abstract PLC"""
 
     def __init__(self, label='', connection_established_coil=65535, state=None, controlled_sensors_label=None):
+        """
+        Constructor
+        :param label: label of the PLC
+        :param connection_established_coil: coil to set to True when the PLC is connected to the server
+        :param state: initial state of the PLC
+        :param controlled_sensors_label: list of sensors label to control
+        """
         self.precision = 10
         self.uid = str(uuid.uuid4())[:8]
         self.label = label
@@ -37,6 +44,7 @@ class Base_PLC(yaml.YAMLObject):
         self.controlled_sensors = {}
 
         log.info(f"{self}: Initialized")
+
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -49,7 +57,7 @@ class Base_PLC(yaml.YAMLObject):
         """Override this function to make the PLC do something at `worker_frequency` rate"""
         pass
 
-    def set_data_bank(self, data_bank: DataBank):
+    def set_data_bank(self, data_bank: DataBank) -> None:
         """Set the databank"""
         self.data_bank = data_bank
 
@@ -58,18 +66,22 @@ class PLC(Base_PLC):
     yaml_tag = u'!plc'
     yaml_loader = yaml.Loader
 
+    """
+    Implementation of a PLC
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def check_connected(self):
-        """Verify that all OpenPLC plcs are connected to the server"""
+    def check_connected(self) -> bool:
+        """Verify that the OpenPLC plc is connected to the server"""
         coil_state = self.data_bank.get_coils(self.connection_established_coil, 1)
         if coil_state is not None and coil_state[0]:
             return True
         else:
             return False
 
-    def worker(self):
+    def worker(self) -> None:
         """
         Read data from data bank, and update sensors/device if needed
         Update data bank according to the sensors data

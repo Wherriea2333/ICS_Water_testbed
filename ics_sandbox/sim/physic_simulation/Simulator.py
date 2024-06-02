@@ -1,3 +1,4 @@
+import csv
 import signal
 import sys
 import time
@@ -71,11 +72,18 @@ class Simulator(object):
         if debug >= 2:
             log.setLevel(logging.DEBUG)
 
-    def sig_handler(self):
+    """
+    constructor
+    :param debug: 0: level warning, 1: level info, 2:level debug
+    :param math_parser: 'proportional', 'sympy' or 'wolfram'
+    """
+
+    def sig_handler(self) -> None:
+        # TODO: implement proper signal handling
         print("Received SIGINT, shutting down simulation.")
         self.stop()
 
-    def load_yml(self, path_to_yaml_config):
+    def load_yml(self, path_to_yaml_config: str) -> None:
         """Read and parse YAML configuration file into simulator devices
         """
         self.path_to_yaml_config = path_to_yaml_config
@@ -90,7 +98,7 @@ class Simulator(object):
         self.max_cycle = self.settings['max_cycle']
         self.set_current_tanks_volume()
 
-    def start(self):
+    def start(self) -> None:
         """Start the simulation"""
         set_logging()
 
@@ -107,14 +115,22 @@ class Simulator(object):
             server.start()
             log.info("Server is online")
 
-            # wait all PLCs are connected
-            self.wait_PLCs_connection()
-            if self.max_cycle == 0:
-                while True:
-                    self.main_loop()
-            else:
-                for i in range(self.max_cycle):
-                    self.main_loop()
+            csv_field_names = ['timestamp_ns']
+            for sensor in self.sensors.values():
+                csv_field_names.append(sensor.label)
+
+            with open('simulation_log.csv', 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=csv_field_names)
+                writer.writeheader()
+
+                # wait all PLCs are connected
+                self.wait_PLCs_connection()
+                if self.max_cycle == 0:
+                    while True:
+                        self.main_loop(writer, csv_field_names)
+                else:
+                    for i in range(self.max_cycle):
+                        self.main_loop(writer, csv_field_names)
             server.stop()
         except Exception as error:
             # TODO: implement proper signal handling
@@ -122,6 +138,10 @@ class Simulator(object):
             server.stop()
             log.info("Server is offline")
             traceback.print_exc()
+        finally:
+            log.info("Shutdown server ...")
+            server.stop()
+            log.info("Server is offline")
 
     def wait_PLCs_connection(self):
         """Wait until all PLCs are connected before starting the simulation"""
@@ -139,7 +159,7 @@ class Simulator(object):
                 log.info(f"Waiting 3 s")
                 time.sleep(3)
 
-    def set_inner_state(self, my_data_bank):
+    def set_inner_state(self, my_data_bank: DataBank) -> None:
         """Set initial state of the modbus data bank with initial state given by the yaml config file"""
         for device in self.devices.values():
             if device.read_state():
@@ -150,7 +170,7 @@ class Simulator(object):
         for plc in self.plcs.values():
             plc.set_data_bank(my_data_bank)
 
-    def set_initial_state(self):
+    def set_initial_state(self) -> None:
         """Set initial state of sensors and PLCs"""
         for sensor in self.sensors.values():
             if sensor.active:
@@ -158,7 +178,7 @@ class Simulator(object):
         for plc in self.plcs.values():
             plc.worker()
 
-    def pause(self):
+    def pause(self) -> None:
         # TODO: handle sigint to pause the simulation
         """Pause the simulation"""
 
@@ -168,21 +188,24 @@ class Simulator(object):
         for sensor in self.sensors.values():
             sensor.deactivate()
 
-    def stop(self):
+    def stop(self) -> None:
         # TODO: handle sigint to stop the simulation
         """Stop and destroy the simulation"""
         self.pause()
         sys.exit(0)
 
-    def restart(self):
+    def restart(self) -> None:
         # TODO: handle sigint to restart the simulation
         """Stop and reload the simulation from the original config"""
         self.pause()
         self.load_yml(self.path_to_yaml_config)
         self.start()
 
-    def set_precision(self, precision):
-        """Set the number of output digits of devices, sensors, plc"""
+    def set_precision(self, precision: int) -> None:
+        """
+        Set the number of output digits of devices, sensors, plc
+        :param precision: the number of digits to output
+        """
         for device in self.devices.values():
             device.precision = precision
 
@@ -192,13 +215,13 @@ class Simulator(object):
         for plc in self.plcs.values():
             plc.precision = precision
 
-    def set_current_tanks_volume(self):
-        """Get the initial volume of fluid in tanks"""
+    def set_current_tanks_volume(self) -> None:
+        """Set the initial volume of fluid in tanks"""
         for device in self.devices.values():
             if isinstance(device, Tank):
                 self.current_tanks_volume += device.volume
 
-    def main_loop(self):
+    def main_loop(self, writer: csv.DictWriter, csv_field_names: list[str]) -> None:
         """Main loop of the simulation, reset flow rate to 0, make all active device worker work,
         check simulation volume is correct, sensors update read data,PLC get data from sensors and put them in data bank
          and also update sensor state(which will in their turn update device state)"""
@@ -207,18 +230,27 @@ class Simulator(object):
         for device in self.devices.values():
             if device.active:
                 device.worker()
+
         # check all reservoir
         self.current_tanks_volume = check_reservoir_volume(self.devices, self.current_tanks_volume,
                                                            self.settings['precision'])
+        to_write_to_csv = {'timestamp_ns': time.time_ns()}
         for sensor in self.sensors.values():
             sensor.worker()
+            if sensor.label in csv_field_names:
+                to_write_to_csv[sensor.label] = sensor.read_sensor()
 
         for plc in self.plcs.values():
             plc.worker()
+
+        writer.writerow(to_write_to_csv)
+        # improvement? -> measure time consumed for previous task
+        # then to sleep = sim_speed/1000 - time_consumed (in ms)
         time.sleep(int(self.settings['sim_speed']) / 1000)
 
-    def generate_st_files(self):
-        """Function to generate basic ladder logic which just move input to output"""
+    def generate_st_files(self) -> None:
+        """Function to generate basic ladder logic which just move input to output,
+        only support Boolean and Word (IX/QX,IW/QW)"""
         for plc in self.plcs.values():
             to_be_written = []
             with open(f"{plc.label}.st", "w") as f:

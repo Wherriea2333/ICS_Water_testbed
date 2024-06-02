@@ -161,9 +161,11 @@ connections:
   RO-501:
     outputs:
       - MV-501
+      - MV-503
   RO-502:
     outputs:
       - MV-501
+      - MV-503
   MV-501:
     outputs:
       - T-603
