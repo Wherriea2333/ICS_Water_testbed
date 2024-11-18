@@ -12,7 +12,9 @@
 2. Clone the repository
 3. cd to `ICS_Water_test/ics_sandbox`, under this folder, there should be a main.py
 4. Adjust the test.yml config file if needed, you may also need to change the deployment scripts of the PLC's if you change PLC address.
-5. Launch the python file `sudo python3 main.py`
+5. run the `bash_utils/download_openplc.sh` to install openPLC
+6. If you prefer to use ScadaBR, run the `bash_utils/download_scadaBR.sh` to install it
+7. Launch the python file `sudo python3 main.py` or the `bash_utils/create_docker_network.sh` or the `create_docker_network_scada_LTS.sh` to run the simulation
 ```Tree
 ├── ICS_Water_testbed
 │   ├── ics_sandbox
